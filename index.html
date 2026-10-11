@@ -1,0 +1,2012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Star Log</title>
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#EAF2FF; --card:#FFFFFF; --ink:#1B2150; --muted:#566093; --line:#D6E1FA; --soft:#F1F6FF;
+  --red:#E5382B; --yel:#FFC93C; --teal:#0A8577; --blue:#2F6BFF; --pur:#6A4BEF; --pink:#D63D78; --grn:#1E8F55; --navy:#141A55;
+  --good:#17803F; --bad:#C62828;
+  --font:ui-rounded,'SF Pro Rounded','Arial Rounded MT Bold','Nunito','Trebuchet MS',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B0F33; --card:#171D50; --ink:#EEF1FF; --muted:#AEB5DE; --line:#2A3376; --soft:#1F2760;
+    --good:#5FDB8D; --bad:#FF8A80;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B0F33; --card:#171D50; --ink:#EEF1FF; --muted:#AEB5DE; --line:#2A3376; --soft:#1F2760;
+  --good:#5FDB8D; --bad:#FF8A80;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.35;-webkit-tap-highlight-color:transparent}
+#app{max-width:760px;margin:0 auto;padding-bottom:104px}
+button{font-family:inherit;color:inherit}
+h1,h2,h3,p{margin:0}
+
+/* ---------- scenes (cartoon banners) ---------- */
+.scene{position:relative;overflow:hidden;border-radius:0 0 30px 30px;background:var(--navy)}
+.scene svg{display:block;width:100%;height:clamp(180px,34vw,250px)}
+.head{padding:18px 18px 4px}
+.head h1{font-size:clamp(30px,8vw,44px);font-weight:700;line-height:1.05;letter-spacing:-.01em}
+.head h2{font-size:clamp(26px,7vw,36px);font-weight:700;line-height:1.1}
+.head h2.long{font-size:clamp(21px,5.8vw,30px)}
+.head p{color:var(--muted);margin-top:6px;font-size:17px;max-width:46ch}
+.head .love{color:var(--ink);font-weight:500}
+.wrap{padding:14px 16px 0;display:grid;gap:14px}
+
+/* ---------- cards ---------- */
+.card{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:16px}
+.card h3{font-size:20px;font-weight:600;margin-bottom:10px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{border-radius:22px;padding:14px 14px 14px;color:#fff;position:relative;overflow:hidden;min-height:128px;display:flex;flex-direction:column;justify-content:space-between}
+.tile .lab{font-size:17px;font-weight:600}
+.tile .num{font-size:clamp(30px,8.4vw,42px);font-weight:700;line-height:1;letter-spacing:-.01em;margin-top:6px}
+.tile .sub{font-size:14px;font-weight:500;opacity:.95;margin-top:6px}
+.tile .em{position:absolute;right:10px;top:8px;font-size:30px}
+.t-pts{background:#2F6BFF}
+.t-val{background:#0A8577}
+.t-pig{background:#D63D78}
+.t-money{grid-column:1/-1;background:linear-gradient(120deg,#E5382B,#F26B1D);min-height:0;flex-direction:row;align-items:center;gap:14px}
+.t-money .num{font-size:clamp(40px,12vw,58px)}
+.t-money .em{position:static;font-size:52px;line-height:1}
+.sumline{display:flex;flex-wrap:wrap;gap:6px 10px;font-weight:600}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 10px;background:rgba(255,255,255,.22);font-size:15px;font-weight:600}
+
+.cheer{display:flex;gap:12px;align-items:center;padding:10px 0;border-top:2px dashed var(--line)}
+.cheer:first-of-type{border-top:0}
+.cheer .ico{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-size:24px;background:var(--soft);flex:none}
+.cheer .tx{flex:1;min-width:0}
+.cheer .tx b{display:block;font-weight:600}
+.cheer .tx span{color:var(--muted);font-size:14px}
+.cheer .pts{font-weight:700;color:var(--good);white-space:nowrap}
+.empty{color:var(--muted);padding:6px 0}
+.chipwho{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;font-size:13px;font-weight:700;color:#fff;margin-right:6px;vertical-align:1px}
+.who-m{background:#D63D78}.who-b{background:#2F6BFF}
+
+/* ---------- log table ---------- */
+.grp{background:var(--card);border:2px solid var(--line);border-radius:22px;overflow:hidden}
+.gh{background:var(--g);color:#fff;padding:10px 14px 0;display:flex;justify-content:space-between;gap:8px;align-items:baseline;font-weight:600;font-size:19px}
+.gh b{font-size:15px;font-weight:600;white-space:nowrap}
+.bar{height:8px;background:rgba(255,255,255,.28);margin-top:10px;position:relative}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:#fff;border-radius:0 6px 6px 0}
+.row{display:grid;grid-template-columns:1fr 46px 56px 56px 62px;gap:4px;align-items:center;padding:9px 12px;border-top:1px solid var(--line);font-size:16px}
+.row.hd{font-size:13px;color:var(--muted);font-weight:600;border-top:0;padding-top:8px;padding-bottom:4px}
+.row span:nth-child(n+2){text-align:right;font-variant-numeric:tabular-nums}
+.row .nm{display:flex;gap:8px;align-items:center;min-width:0;line-height:1.15}
+.row .nm em{font-style:normal;font-size:20px;flex:none}
+.row .tot{font-weight:700}
+.rowbtn{width:100%;background:transparent;border:0;border-top:1px solid var(--line);text-align:left;color:inherit;font-family:inherit;cursor:pointer}
+.rowbtn:hover{background:var(--soft)}
+.rowbtn:focus-visible{outline:3px solid var(--yel);outline-offset:-3px}
+.bank{display:grid;gap:0}
+.bank .b{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-top:2px dashed var(--line);font-weight:500}
+.bank .b:first-child{border-top:0}
+.bank .b b{font-weight:700;text-align:right}
+.bank .b.last{font-size:19px}
+
+/* ---------- forms ---------- */
+.lbl{font-weight:600;margin:14px 0 8px;font-size:18px}
+.lbl:first-child{margin-top:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:2px solid var(--line);background:var(--soft);border-radius:999px;padding:9px 14px;font-size:16px;font-weight:500;cursor:pointer;min-height:44px;display:inline-flex;align-items:center;gap:6px}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip:focus-visible,.btn:focus-visible,.tab:focus-visible,.iconbtn:focus-visible,input:focus-visible{outline:3px solid var(--yel);outline-offset:2px}
+.whobtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.whobtn{border:3px solid var(--line);background:var(--soft);border-radius:20px;padding:12px;font-size:20px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;min-height:60px}
+.whobtn .chipwho{width:34px;height:34px;font-size:19px;margin:0}
+.whobtn.on{border-color:var(--ink);background:var(--card);box-shadow:0 4px 0 var(--ink)}
+.field{width:100%;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:14px;padding:11px 14px;font-size:18px;font-family:inherit;min-height:48px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{border:0;border-radius:18px;padding:14px 18px;font-size:19px;font-weight:700;cursor:pointer;min-height:54px;width:100%;color:#fff;background:var(--red);box-shadow:0 4px 0 rgba(0,0,0,.25);transition:transform .08s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.25)}
+.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.btn.blue{background:var(--blue)}.btn.green{background:var(--grn)}.btn.pur{background:var(--pur)}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:none;border:2px solid var(--line);min-height:44px;font-size:16px;width:auto;padding:8px 14px}
+.preview{font-weight:600;color:var(--muted);margin-top:8px;min-height:1.4em}
+.preview b{color:var(--ink)}
+.iconbtn{border:2px solid var(--line);background:var(--soft);border-radius:12px;padding:6px 12px;font-size:15px;font-weight:600;cursor:pointer;min-height:36px}
+.lockcard{text-align:center;padding:22px 16px}
+.lockcard .big{font-size:64px;line-height:1}
+.lockcard h3{font-size:24px;margin:8px 0 4px}
+.lockcard p{color:var(--muted);margin-bottom:14px}
+.lockcard .field{max-width:240px;text-align:center;font-size:26px;letter-spacing:.3em;margin:0 auto 12px;display:block}
+.lockcard .btn{max-width:240px}
+.err{color:var(--bad);font-weight:600;min-height:1.3em;margin-bottom:6px}
+.topline{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.undo{border:0;background:transparent;color:var(--muted);text-decoration:underline;font-size:14px;cursor:pointer;padding:6px;min-height:36px}
+
+/* ---------- piggy page ---------- */
+.big-pig{display:flex;gap:14px;align-items:center}
+.big-pig .amt{font-size:clamp(38px,11vw,54px);font-weight:700;line-height:1}
+.big-pig small{display:block;color:var(--muted);font-size:15px;margin-top:6px}
+.eq .e{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:2px dashed var(--line)}
+.eq .e:first-of-type{border-top:0}
+.eq .e .ic{font-size:24px;width:34px;text-align:center;flex:none}
+.eq .e .tx{flex:1;min-width:0}
+.eq .e .tx span{display:block;color:var(--muted);font-size:14px}
+.eq .e .v{font-weight:700;white-space:nowrap}
+.plus{color:var(--good)}.minus{color:var(--bad)}
+.eq .final{background:var(--ink);color:var(--bg);border-radius:16px;padding:12px;margin-top:6px;border-top:0}
+.eq .final .tx span{color:inherit;opacity:.8}
+.eq .final .v{font-size:24px}
+
+/* ---------- login / auth / welcome ---------- */
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px;background:var(--card);border-bottom:2px solid var(--line);font-weight:500}
+.topbar .tbtns{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.profiles{display:grid;gap:12px}
+.prof{display:flex;align-items:center;gap:14px;text-align:left;width:100%;border:3px solid var(--line);background:var(--card);border-radius:24px;padding:12px 16px;cursor:pointer;min-height:84px;box-shadow:0 4px 0 var(--line)}
+.prof:active{transform:translateY(3px);box-shadow:none}
+.prof:focus-visible{outline:3px solid var(--yel);outline-offset:2px}
+.prof .av{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;font-size:34px;background:var(--soft);flex:none}
+.prof .nm2{display:block;font-size:24px;font-weight:700;line-height:1.1}
+.prof .sb{display:block;color:var(--muted);font-size:15px;margin-top:2px}
+.authcard{text-align:center;padding:22px 16px}
+.authcard .big{font-size:56px;line-height:1}
+.authcard h3{font-size:24px;margin:8px 0 4px}
+.authcard p{color:var(--muted);margin-bottom:14px}
+.pinfield{max-width:240px;text-align:center;font-size:26px;letter-spacing:.3em;margin:0 auto 12px;display:block}
+.authcard .btn{max-width:260px;margin:0 auto}
+.authcard .step{font-size:14px;font-weight:600;color:var(--muted);margin-bottom:6px}
+.scene.tall svg{height:clamp(250px,60vw,330px)}
+.prof .av .face{width:100%;height:100%;border-radius:50%;display:block;object-fit:cover;background:#FFFCF3}
+.topbar .face{width:1.7em;height:1.7em;border-radius:50%;vertical-align:-.5em;object-fit:cover;background:#FFFCF3}
+.authcard .big .face{width:96px;height:96px;border-radius:50%;object-fit:cover;background:#FFFCF3;border:3px solid var(--line)}
+.mut{color:var(--muted)}
+.cardask .two .btn{width:100%}
+
+/* ---------- nav ---------- */
+nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--card);border-top:2px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+nav .in{max-width:760px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.tab{border:0;background:transparent;border-radius:16px;padding:6px 2px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:0;font-size:12.5px;font-weight:600;color:var(--muted);min-height:56px}
+.tab span.e{font-size:25px;line-height:1.15}
+.tab[aria-current="page"]{background:var(--ink);color:var(--bg)}
+.foot{text-align:center;color:var(--muted);font-size:14px;padding:6px 16px 0}
+
+/* ---------- admin ---------- */
+.face.initial{display:grid;place-items:center;border-radius:50%;background:var(--c,#2F6BFF);color:#fff;font-weight:700;line-height:1}
+.prof .av .face.initial{font-size:30px}
+.vh{position:absolute;opacity:0;width:1px;height:1px;overflow:hidden}
+.adm-row{display:flex;gap:12px;align-items:center;padding:12px 0;border-top:2px dashed var(--line)}
+.adm-row:first-of-type{border-top:0}
+.adm-av{width:64px;height:64px;flex:none}
+.adm-av .face{width:100%;height:100%;border-radius:50%;object-fit:cover;background:#FFFCF3;font-size:28px}
+.adm-f{flex:1;min-width:0}
+.adm-b{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+label.iconbtn{display:inline-flex;align-items:center;cursor:pointer}
+.chk{display:flex;gap:10px;align-items:center;font-weight:500;min-height:44px}
+.chk input{width:22px;height:22px}
+.btn.danger{background:#B3261E}
+.card.warn{border-color:#E5A19B}
+.adj{display:grid;gap:4px;margin-top:8px;font-size:14px;color:var(--muted);font-weight:500}
+.adj label{display:grid;grid-template-columns:110px 1fr;align-items:center;gap:8px}
+.adj input{width:100%}
+.guide{background:var(--soft);border:2px solid var(--line);border-radius:16px;padding:10px 14px;margin:0 0 12px}
+.guide summary{font-weight:600;cursor:pointer;min-height:36px;display:flex;align-items:center}
+.guide ol{padding-left:20px;margin:8px 0 0;font-size:15px}
+.guide li{margin:8px 0}
+.guide a{color:var(--blue);font-weight:600}
+.guide textarea{width:100%;height:150px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;border:2px solid var(--line);border-radius:12px;padding:8px;background:var(--card);color:var(--ink);margin-top:6px;resize:vertical}
+.help{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-top:2px dashed var(--line)}
+.help:first-of-type{border-top:0}
+
+/* ---------- celebration vibe ---------- */
+.scene svg.bunting{position:absolute;top:0;left:0;width:100%;height:34px;pointer-events:none}
+#party{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:15}
+#party span{position:absolute;bottom:-50px;opacity:.42;animation:rise linear infinite}
+@keyframes rise{to{transform:translateY(-118vh) rotate(24deg)}}
+.scene .a-nod{transform-box:fill-box;transform-origin:50% 94%;animation:aNod 3.2s ease-in-out infinite}
+@keyframes aNod{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+.scene .a-drive{animation:aDrive 12s infinite}
+@keyframes aDrive{0%{transform:translateX(-430px);animation-timing-function:cubic-bezier(.15,.7,.3,1)}18%{transform:translateX(0)}62%{transform:translateX(0);animation-timing-function:cubic-bezier(.6,0,.9,.5)}80%{transform:translateX(580px)}80.01%{transform:translateX(-430px)}100%{transform:translateX(-430px)}}
+.scene .a-wheel{transform-box:fill-box;transform-origin:center;animation:aWheel 12s infinite}
+@keyframes aWheel{0%{transform:rotate(0);animation-timing-function:cubic-bezier(.15,.7,.3,1)}18%{transform:rotate(720deg)}62%{transform:rotate(720deg);animation-timing-function:cubic-bezier(.6,0,.9,.5)}80%{transform:rotate(3300deg)}100%{transform:rotate(3300deg)}}
+.carbtn{position:absolute;left:20%;right:20%;top:28%;bottom:4%;background:transparent;border:0;border-radius:18px;cursor:pointer;z-index:3}
+.carbtn:focus-visible{outline:3px solid var(--yel);outline-offset:-3px}
+.hint{color:var(--muted);font-size:15px;margin-top:4px}
+.scene .a-rumble{animation:aRumble .3s linear infinite}
+@keyframes aRumble{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.2px)}}
+.scene .puff{transform-box:fill-box;transform-origin:center;animation:aPuff 2.4s ease-out infinite;opacity:0}
+@keyframes aPuff{0%{transform:translate(0,0) scale(.4);opacity:.7}100%{transform:translate(-30px,-20px) scale(1.5);opacity:0}}
+.scene .a-bob{animation:aBob 2.6s ease-in-out infinite}
+@keyframes aBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.scene .a-swing{transform-origin:200px 24px;animation:aSwing 3.6s ease-in-out infinite}
+@keyframes aSwing{0%,100%{transform:rotate(-2.4deg)}50%{transform:rotate(2.4deg)}}
+@keyframes aTilt{0%,100%{transform:rotate(-2.6deg)}50%{transform:rotate(2.6deg)}}
+.scene .a-blink{transform-box:fill-box;transform-origin:center;animation:aBlink 4.2s infinite}
+@keyframes aBlink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+.scene .a-wink{transform-box:fill-box;transform-origin:center;animation:aWink 5.2s infinite}
+@keyframes aWink{0%,78%,100%{transform:scaleY(1)}84%,92%{transform:scaleY(.06)}}
+.scene .a-sway-l{transform-origin:159px 106px;animation:aSway 2.1s ease-in-out infinite}
+.scene .a-sway-r{transform-origin:241px 106px;animation:aSway 2.1s ease-in-out infinite reverse}
+@keyframes aSway{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(10deg)}}
+.scene .a-pump{transform-origin:116px 240px;animation:aPump 1.2s ease-in-out infinite}
+@keyframes aPump{0%,100%{transform:rotate(0)}50%{transform:rotate(-10deg)}}
+.scene .a-float{transform-box:fill-box;transform-origin:center;animation:aFloat 4s ease-in-out infinite}
+@keyframes aFloat{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-12px) rotate(3deg)}}
+.scene .cf{transform-box:fill-box;transform-origin:center;animation:aFall 6s linear infinite}
+@keyframes aFall{0%{transform:translateY(-20px) rotate(0)}100%{transform:translateY(290px) rotate(540deg)}}
+.scene .a-pulse{transform-box:fill-box;transform-origin:center;animation:aPulse 1.6s ease-in-out infinite}
+@keyframes aPulse{0%,100%{transform:scale(.6);opacity:.4}50%{transform:scale(1.3);opacity:1}}
+@media (prefers-reduced-motion:reduce){.scene *{animation:none!important}#party{display:none}}
+
+/* ---------- toast & confetti ---------- */
+#toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:18px;font-weight:600;max-width:min(92vw,520px);text-align:center;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:40}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+.confetti{position:fixed;top:-20px;font-size:26px;z-index:50;pointer-events:none;animation:fall 1.9s ease-in forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(540deg);opacity:.9}}
+
+/* ---------- motion (kept to one moment per scene) ---------- */
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes twinkle{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.bob{animation:bob 3.2s ease-in-out infinite}
+.tw{animation:twinkle 2.6s ease-in-out infinite}
+.tw2{animation:twinkle 3.4s ease-in-out infinite .8s}
+.bnc{animation:bounce .5s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.bob,.tw,.tw2,.bnc{animation:none}.confetti{display:none}#toast{transition:none}}
+</style>
+</head>
+<body>
+<svg aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden"><defs>
+<radialGradient id="gBalloonR" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#FF8A7A"/><stop offset="1" stop-color="#D62F2F"/></radialGradient>
+<radialGradient id="gBalloonB" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#8DB6FF"/><stop offset="1" stop-color="#2F5FD6"/></radialGradient>
+<radialGradient id="gBalloonY" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#FFE98A"/><stop offset="1" stop-color="#F2A81D"/></radialGradient>
+<radialGradient id="gBalloonG" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#8DEBC2"/><stop offset="1" stop-color="#14A06F"/></radialGradient>
+<linearGradient id="gGarden" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#BFE3FF"/><stop offset=".45" stop-color="#DDF2C9"/><stop offset="1" stop-color="#6DBE62"/></linearGradient>
+<linearGradient id="gCity" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7F9FC2"/><stop offset=".6" stop-color="#C9D6E2"/><stop offset="1" stop-color="#F0DCCB"/></linearGradient>
+</defs></svg>
+<div id="party" aria-hidden="true"></div>
+<div id="app"><main id="page" aria-live="polite"></main></div>
+<nav aria-label="Pages"><div class="in" id="tabs"></div></nav>
+<div id="toast" role="status"></div>
+<noscript>Please turn on JavaScript to use the Star Log.</noscript>
+
+<script>
+const SYNC_ENABLED = true;    /* true only in the "online" build */
+const TEMPLATE = true;    /* the blank copy for another family is built with this set to true */
+/* =====================================================================
+   RIDHAAN'S STAR LOG  —  rebuilt from "Web_app_for_appreciation.xlsx"
+   Assumptions taken from the workbook (kept as named constants):
+   - 1 point = $0.01 (1 cent), changed from 5 cents in the Excel file
+   - Starting points: reset to 0 for every activity (the Excel file had 100 + 100 each)
+   - Points redeemed so far: reset to 0 (the Excel file had 20)
+   - Piggy money: $50.00                 Excel: B7
+   - Piggy expenses so far: $4.00        Excel: J15
+   Everything new (awards, redeems, spending) is added on top of these.
+   ===================================================================== */
+let RATE_C = 1;              // cents per point (Mumma/Bapu can change it in the app)
+const PARENT_PIN = '1234';   // simple gate so only Mumma & Bapu award points
+const BASE = { each: 0, redeemPts: 0, expenseC: 400, piggyC: 5000 };
+/* Fresh start: every point, award, redeem and PIN saved before this moment is ignored. */
+const RATE_AT = 1791553667238;   // a point value saved before this moment is ignored, so everyone starts at 1 cent
+const RESET_AT = 1791552641874;
+
+const GROUPS_BASE = [
+  {id:'study', name:'Study', color:'#2F6BFF', acts:[['learning','Learning','🧠'],['homework','Homework','✏️'],['exam','Exam Result','🏅'],['online','Online Assignments','💻']]},
+  {id:'eca', name:'ECA', color:'#D63D78', acts:[['art','Art','🎨'],['drawing','Drawing','🖍️']]},
+  {id:'cca', name:'CCA', color:'#6A4BEF', acts:[['coding','Coding','👾'],['typing','Typing','⌨️']]},
+  {id:'self', name:'Self Help', color:'#0A8577', acts:[['school','Ready for school','🎒'],['bag','Bag Pack','🧳'],['shower','Shower','🚿'],['brush','Brush','🪥'],['food','Food','🍽️'],['sleep','Sleep on Time','😴']]},
+  {id:'sports', name:'Sports', color:'#D9480F', acts:[['cycling','Cycling','🚴'],['cricket','Cricket','🏏'],['running','Running','🏃'],['skating','Skating','⛸️'],['swimming','Swimming','🏊']]},
+  {id:'others', name:'Others', color:'#946200', acts:[['others','Others','⭐']]}
+];
+const GROUPS = [], ACTS = {};
+function rebuildActs(){
+  GROUPS.length = 0; Object.keys(ACTS).forEach(k => delete ACTS[k]);
+  GROUPS_BASE.forEach(g => {
+    const ng = {id:g.id, name:(cfg.gnames && cfg.gnames[g.id]) || g.name, color:g.color, acts:[]};
+    g.acts.forEach(a => ng.acts.push([a[0], (cfg.anames && cfg.anames[a[0]]) || a[1], a[2]]));
+    (cfg.extra || []).filter(x => x.g === g.id).forEach(x => ng.acts.push([x.id, x.name, x.e || '⭐']));
+    GROUPS.push(ng);
+  });
+  GROUPS.forEach(g => g.acts.forEach(a => { ACTS[a[0]] = {id:a[0], name:a[1], emoji:a[2], group:g}; }));
+}
+
+/* ---------- built-in portraits (empty in this blank copy: add pictures in Admin) ---------- */
+const PHOTO = {kid:{full:'',face:'',head:''},mum:{full:'',face:''},dad:{full:'',face:''}};
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = c => (c < 0 ? '-' : '') + '$' + (Math.abs(c) / 100).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+const num = n => Number(n).toLocaleString('en-US');
+const DEFAULT_NAMES = TEMPLATE ? {ridhaan:'Child', mumma:'Parent 1', bapu:'Parent 2'} : {ridhaan:'Ridhaan', mumma:'Mumma', bapu:'Bapu'};
+const NAMES = Object.assign({}, DEFAULT_NAMES);
+const WHO = { get m(){ return NAMES.mumma; }, get b(){ return NAMES.bapu; } };
+const KEY2 = {ridhaan:'kid', mumma:'mum', bapu:'dad'};
+function mkStore(key, dflt){
+  return {key, read(){ try { return JSON.parse(localStorage.getItem(key)) || dflt(); } catch(e){ return dflt(); } },
+          write(o){ try { localStorage.setItem(key, JSON.stringify(o)); } catch(e){ return false; } syncHook(key, o); return true; }};
+}
+const profStore = mkStore('ridhaan-star-profiles-v1', () => ({}));
+const adminStore = mkStore('ridhaan-star-admin-v1', () => ({}));
+let prof = Object.assign({names:{}, pics:{}}, profStore.read());
+const _adm = adminStore.read();
+let admin = Object.assign({partner:false, helpers:[]}, _adm);
+if (_adm.partner === undefined && _adm.mumma) admin.partner = true;
+delete admin.mumma;
+const CFG_DEFAULTS = TEMPLATE
+  ? {done:false, nick:'', carNo:'1', piggyC:0, expenseC:0, master:'bapu', noDefault:true, gnames:{}, anames:{}, extra:[], msgs:{}}
+  : {done:true, nick:'Ridhu', carNo:'8', piggyC:5000, expenseC:400, master:'bapu', noDefault:false, gnames:{}, anames:{}, extra:[], msgs:{}};
+const cfgStore = mkStore('ridhaan-star-config-v1', () => ({}));
+let cfg = Object.assign({}, CFG_DEFAULTS, cfgStore.read());
+const partnerId = () => cfg.master === 'bapu' ? 'mumma' : 'bapu';
+function applyProfiles(){
+  Object.keys(NAMES).forEach(k => { if (!(k in DEFAULT_NAMES)) delete NAMES[k]; });
+  Object.keys(DEFAULT_NAMES).forEach(u => { NAMES[u] = (prof.names && String(prof.names[u] || '').trim()) || DEFAULT_NAMES[u]; });
+  (admin.helpers || []).forEach(hp => { NAMES[hp.id] = hp.name; });
+}
+const defaultFace = u => (KEY2[u] && !cfg.noDefault) ? PHOTO[KEY2[u]].face : null;
+const picFace = u => (prof.pics[u] && prof.pics[u].face) || defaultFace(u);
+const picFull = u => (prof.pics[u] && prof.pics[u].full) || ((KEY2[u] && !cfg.noDefault) ? PHOTO[KEY2[u]].full : null);
+const AVCOL = ['#2F6BFF', '#D63D78', '#0A8577', '#6A4BEF', '#D9480F'];
+const avColor = u => AVCOL[Array.from(String(u)).reduce((a, ch) => a + ch.charCodeAt(0), 0) % AVCOL.length];
+const initialOf = u => String(NAMES[u] || '?').trim().charAt(0).toUpperCase();
+function av(u){
+  const s = picFace(u);
+  return s ? `<img class="face" alt="" src="${s}" width="100" height="100">` : `<span class="face initial" style="--c:${avColor(u)}">${esc(initialOf(u))}</span>`;
+}
+const isMaster = () => !!session && session.user === cfg.master;
+const isHelper = u => (admin.helpers || []).some(hp => hp.id === u);
+const isAdmin = () => !!session && (isMaster() || (session.user === partnerId() && admin.partner) || isHelper(session.user));
+const allUsers = () => ['ridhaan', 'mumma', 'bapu'].concat((admin.helpers || []).map(hp => hp.id));
+const fmtDate = ts => ts ? new Date(ts).toLocaleDateString(undefined, {day:'numeric', month:'short'}) : 'From my Excel log';
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- storage: family sync (db) when available, else this device ---------- */
+const local = {
+  key: 'ridhaan-star-log-v2',
+  read(){ try { return JSON.parse(localStorage.getItem(this.key)) || []; } catch(e){ return []; } },
+  write(a){ try { localStorage.setItem(this.key, JSON.stringify(a)); } catch(e){ return false; } syncHook(this.key, a); return true; }
+};
+let mode = 'local', events = [], seen = new Set(), seenInit = false;
+
+function clean(e){
+  if (!e || typeof e !== 'object') return null;
+  const t = e.type;
+  if (!['award','adjust','redeem','expense','deposit'].includes(t)) return null;
+  const o = {id:String(e.id || ''), type:t, ts:Number(e.ts) || 0, note:String(e.note || '').slice(0, 80)};
+  if (t === 'award'){
+    if (!ACTS[e.act] || !['b','m'].includes(e.who)) return null;
+    o.act = e.act; o.who = e.who; o.pts = Math.trunc(Number(e.pts) || 0);
+  } else if (t === 'adjust'){
+    if (!ACTS[e.act] || !['b','m'].includes(e.who)) return null;
+    o.act = e.act; o.who = e.who; o.delta = Math.trunc(Number(e.delta) || 0);
+  } else if (t === 'redeem'){
+    o.pts = Math.max(0, Math.floor(Number(e.pts) || 0));
+  } else {
+    o.cents = Math.max(0, Math.floor(Number(e.cents) || 0));
+  }
+  return o;
+}
+function setEvents(list){
+  events = list.map(clean).filter(Boolean).filter(e => e.ts >= RESET_AT).sort((a,b) => a.ts - b.ts);
+  if (!seenInit){ events.forEach(e => seen.add(e.id)); seenInit = true; }
+  else {
+    events.forEach(e => {
+      if (!seen.has(e.id)){ seen.add(e.id); if (e.type === 'award') celebrate(e); }
+    });
+  }
+  render();
+}
+async function storeAdd(ev){
+  if (!session || (!isParent() && ev.type !== 'redeem')) throw {code:'denied'};
+  const arr = local.read(); arr.push(ev); if (local.write(arr) === false) throw {code:'full'}; setEvents(arr);
+}
+async function storeRemove(id){
+  if (!isParent()) throw {code:'denied'};
+  const arr = local.read().filter(e => e.id !== id); local.write(arr); setEvents(arr);
+}
+function writeFailed(err){
+  const c = err && err.code;
+  toast(c === 'denied' ? 'Only ' + NAMES.mumma + ' and ' + NAMES.bapu + ' can change points.' : c === 'full'
+    ? 'This device is out of storage space, so that did not save.'
+    : 'Oops, that did not save. Please try again.');
+}
+
+/* ---------- parent PINs (stored as a one-way hash, never as plain text) ---------- */
+const pinStore = {
+  key: 'ridhaan-star-pins-v2',
+  read(){ try { return JSON.parse(localStorage.getItem(this.key)) || {}; } catch(e){ return {}; } },
+  write(o){ try { localStorage.setItem(this.key, JSON.stringify(o)); } catch(e){ return false; } syncHook(this.key, o); return true; }
+};
+let pins = Object.assign({mumma:null, bapu:null, ridhaan:null}, pinStore.read());
+async function hashPin(user, pin){
+  try {
+    const d = new TextEncoder().encode('ridhaan-star-log|' + user + '|' + pin);
+    const b = await crypto.subtle.digest('SHA-256', d);
+    return Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join('');
+  } catch(e){ return 'p:' + btoa(user + '|' + pin); }
+}
+async function savePin(user, hash){
+  const o = pinStore.read(); o[user] = hash; pinStore.write(o);
+  pins[user] = hash;
+}
+
+/* ---------- point value (cents per point) ---------- */
+const setStore = {
+  key: 'ridhaan-star-settings-v2',
+  read(){ try { return JSON.parse(localStorage.getItem(this.key)) || {}; } catch(e){ return {}; } },
+  write(o){ try { localStorage.setItem(this.key, JSON.stringify(o)); } catch(e){ return false; } syncHook(this.key, o); return true; }
+};
+(function(){ const s = setStore.read(); if (Number(s.rateC) > 0) RATE_C = Number(s.rateC); })();
+const fmtRate = () => (Number.isInteger(RATE_C) ? String(RATE_C) : RATE_C.toFixed(2).replace(/0+$/, '')) + '¢';
+async function saveRate(v){
+  setStore.write({rateC:v});
+  RATE_C = v;
+}
+
+/* ---------- maths (mirrors the Excel sheet) ---------- */
+function compute(list){
+  const tot = {};
+  Object.keys(ACTS).forEach(k => tot[k] = {b:BASE.each, m:BASE.each});
+  let redeemPts = BASE.redeemPts, spentC = cfg.expenseC, depC = 0;
+  list.forEach(e => {
+    if (e.type === 'award') tot[e.act][e.who] += e.pts;
+    else if (e.type === 'adjust') tot[e.act][e.who] += e.delta;
+    else if (e.type === 'redeem') redeemPts += e.pts;
+    else if (e.type === 'expense') spentC += e.cents;
+    else if (e.type === 'deposit') depC += e.cents;
+  });
+  let totalPts = 0;
+  Object.values(tot).forEach(t => totalPts += t.b + t.m);
+  const balPts = totalPts - redeemPts;
+  const piggyInC = cfg.piggyC + depC;
+  const piggyC = piggyInC - spentC;
+  const pointsC = Math.round(balPts * RATE_C);
+  return {tot, totalPts, redeemPts, balPts, totalValC: Math.round(totalPts * RATE_C), redeemValC: Math.round(redeemPts * RATE_C),
+          pointsC, piggyInC, spentC, depC, piggyC, moneyC: pointsC + piggyC};
+}
+
+/* ---------- state ---------- */
+let route = 'home', session = null, screen = 'login', didCount = false;
+const ui = {who:'', cat:'', act:'', amt:100, custom:'', note:'', rd:'', rdNote:'', sp:'', spNote:'', dp:'', dpNote:'', authErr:'', auth:null, wlStage:'ask', wlPts:'', wlPin:'', wlErr:'', wlDone:0, wlFresh:true, first:false, pinAw:'', pinEd:'', pinRate:'', pinRd:'', pinKid:'', rateIn:'', edAct:'', edCol:'m', edNew:''};
+Object.assign(ui, {pinMsg:'', cn_link:'', cn_url:'', cn_code:'', cnErr:'', syncLink:'', pinSync:'', sign:1, su_child:'', su_nick:'', su_p1:'', su_p2:'', su_master:'bapu', su_rate:'1', su_piggy:'0', su_car:'1', pinFam:'', pinAct:'', pinNew:'', newWord:'', newActG:'', newActN:'', newActE:'', adj:{}, pend:{}, sketch:true, pinProf:'', pinAcc:'', pinBk:'', pinFr:'', frWord:'', newHelper:'', restoreData:null, restoreName:''});
+const pinIn = (key, label) => `<input class="field" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="••••" aria-label="${label}" data-bind="${key}" value="${esc(ui[key])}" style="max-width:200px">`;
+async function myPinOk(v){ return !!(session && pins[session.user] && await hashPin(session.user, String(v)) === pins[session.user]); }
+const isParent = () => !!session && (session.user === 'mumma' || session.user === 'bapu');
+const myWho = () => session && session.user === 'mumma' ? 'm' : 'b';
+
+/* ---------- cartoon scenes ---------- */
+const star = (x, y, r, fill, cls='') => {
+  let d = '';
+  for (let i = 0; i < 10; i++){
+    const a = -Math.PI/2 + i * Math.PI/5, rr = i % 2 ? r*0.45 : r;
+    d += (i ? 'L' : 'M') + (x + rr*Math.cos(a)).toFixed(1) + ',' + (y + rr*Math.sin(a)).toFixed(1);
+  }
+  return `<path d="${d}Z" fill="${fill}" class="${cls}"/>`;
+};
+
+function sceneSpace(){
+  const dots = [[20,20,1.6],[60,150,1.2],[110,28,1.4],[150,120,1.2],[180,18,1.8],[255,30,1.3],[300,95,1.5],[372,110,1.4],[388,24,1.3],[40,100,1.1],[205,172,1.4],[262,150,1.2],[345,185,1.5],[140,70,1.1]];
+  return `<svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="A smiling rocket flying past a ringed planet, a happy moon and stars">
+  <defs>
+    <linearGradient id="spg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0B0F4A"/><stop offset="1" stop-color="#4B2A9E"/></linearGradient>
+    <radialGradient id="plg" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFC27A"/><stop offset="1" stop-color="#FF6B4A"/></radialGradient>
+  </defs>
+  <rect width="400" height="200" fill="url(#spg)"/>
+  ${dots.map((d,i)=>`<circle cx="${d[0]}" cy="${d[1]}" r="${d[2]}" fill="#fff" class="${i%2?'tw':'tw2'}"/>`).join('')}
+  ${star(235,62,6,'#FFC93C','tw')}${star(32,58,5,'#FFC93C','tw2')}${star(368,150,5,'#FFC93C','tw')}
+  <g>
+    <ellipse cx="78" cy="82" rx="54" ry="12" fill="none" stroke="#FFD27D" stroke-width="7" transform="rotate(-18 78 82)"/>
+    <circle cx="78" cy="82" r="32" fill="url(#plg)"/>
+    <path d="M24 82 A54 12 0 0 0 132 82" fill="none" stroke="#FFD27D" stroke-width="7" transform="rotate(-18 78 82)"/>
+    <circle cx="68" cy="76" r="3" fill="#1B2150"/><circle cx="88" cy="74" r="3" fill="#1B2150"/>
+    <path d="M66 88 Q78 98 91 86" fill="none" stroke="#1B2150" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <g>
+    <circle cx="335" cy="48" r="20" fill="#E7E9FF"/>
+    <circle cx="326" cy="40" r="4" fill="#C6CAF5"/><circle cx="346" cy="58" r="5" fill="#C6CAF5"/><circle cx="347" cy="38" r="2.5" fill="#C6CAF5"/>
+    <circle cx="329" cy="50" r="2.2" fill="#1B2150"/><circle cx="341" cy="49" r="2.2" fill="#1B2150"/>
+    <path d="M329 56 Q335 61 341 56" fill="none" stroke="#1B2150" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  <circle cx="350" cy="150" r="13" fill="#36C98B"/><ellipse cx="350" cy="150" rx="22" ry="4.5" fill="none" stroke="#B8F5DA" stroke-width="2.5" transform="rotate(20 350 150)"/>
+  <g class="bob"><g transform="translate(228 108) rotate(38)">
+    <path d="M-9 30 Q0 62 9 30Z" fill="#FFC93C"/><path d="M-5 30 Q0 50 5 30Z" fill="#FF7A1A"/>
+    <path d="M-17 8 L-33 36 L-17 28Z" fill="#E5382B"/><path d="M17 8 L33 36 L17 28Z" fill="#E5382B"/>
+    <path d="M0 -52 C24 -32 24 8 17 30 L-17 30 C-24 8 -24 -32 0 -52Z" fill="#fff"/>
+    <path d="M0 -52 C11 -43 16 -35 18 -26 L-18 -26 C-16 -35 -11 -43 0 -52Z" fill="#E5382B"/>
+    <circle cx="0" cy="-8" r="12" fill="#2F6BFF" stroke="#1B2150" stroke-width="3"/>
+    <circle cx="-4" cy="-10" r="2" fill="#fff"/><circle cx="4" cy="-10" r="2" fill="#fff"/>
+    <path d="M-5 -3 Q0 2 5 -3" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+    <rect x="-17" y="20" width="34" height="5" fill="#E5382B"/>
+  </g></g>
+</svg>`;
+}
+
+function car(body, num, scale, x, y){
+  return `<g transform="translate(${x} ${y}) scale(${scale})">
+    <rect x="0" y="4" width="14" height="5" rx="2" fill="#1B2150"/><rect x="4" y="9" width="4" height="12" fill="#1B2150"/>
+    <path d="M10 42 L10 28 Q10 22 20 20 L50 16 Q60 6 80 6 L100 6 Q112 6 118 18 L132 22 Q142 24 142 34 L142 42 Q142 48 136 48 L16 48 Q10 48 10 42Z" fill="${body}"/>
+    <path d="M10 36 L142 36 L142 42 Q142 48 136 48 L16 48 Q10 48 10 42Z" fill="rgba(0,0,0,.18)"/>
+    <path d="M58 17 Q64 9 80 9 L98 9 Q106 9 110 18Z" fill="#BFE6FF" stroke="#1B2150" stroke-width="2"/>
+    <circle cx="86" cy="14" r="7.5" fill="#FFC93C" stroke="#1B2150" stroke-width="2"/>
+    <rect x="86" y="11" width="9" height="4.5" rx="2" fill="#1B2150"/>
+    <circle cx="72" cy="31" r="9" fill="#fff"/><text x="72" y="36" text-anchor="middle" font-family="Fredoka,Arial,sans-serif" font-weight="700" font-size="13" fill="#1B2150">${num}</text>
+    <ellipse cx="140" cy="31" rx="4" ry="5" fill="#FFF3A8"/>
+    <rect x="22" y="38" width="22" height="3" rx="1.5" fill="#fff" opacity=".8"/>
+    <g class="bnc"><circle cx="36" cy="48" r="14" fill="#1B2150"/><circle cx="36" cy="48" r="6" fill="#CBD2F5"/>
+    <circle cx="112" cy="48" r="14" fill="#1B2150"/><circle cx="112" cy="48" r="6" fill="#CBD2F5"/></g>
+  </g>`;
+}
+function sceneRace(){
+  return `<svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="A red number 8 racing car zooming along a track beside a blue car, with a checkered flag">
+  <defs><linearGradient id="rsk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5FBFFF"/><stop offset="1" stop-color="#DDF4FF"/></linearGradient></defs>
+  <rect width="400" height="200" fill="url(#rsk)"/>
+  <circle cx="60" cy="40" r="20" fill="#FFE066"/>
+  <g fill="#fff"><ellipse cx="170" cy="34" rx="28" ry="10"/><ellipse cx="190" cy="28" rx="18" ry="10"/><ellipse cx="300" cy="52" rx="24" ry="8"/><ellipse cx="316" cy="47" rx="14" ry="8"/></g>
+  <path d="M0 128 Q60 92 130 120 T260 112 T400 122 L400 150 L0 150Z" fill="#46C46B"/>
+  <rect y="146" width="400" height="54" fill="#3A3F5C"/>
+  <line x1="0" y1="147" x2="400" y2="147" stroke="#fff" stroke-width="7"/>
+  <line x1="0" y1="147" x2="400" y2="147" stroke="#E5382B" stroke-width="7" stroke-dasharray="14 14"/>
+  <line x1="0" y1="178" x2="400" y2="178" stroke="#fff" stroke-width="4" stroke-dasharray="26 18"/>
+  <g stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".9"><line x1="30" y1="132" x2="88" y2="132"/><line x1="12" y1="148" x2="82" y2="148"/><line x1="40" y1="164" x2="90" y2="164"/></g>
+  <g transform="translate(350 70)"><line x1="0" y1="0" x2="0" y2="76" stroke="#1B2150" stroke-width="4" stroke-linecap="round"/>
+    <rect x="0" y="0" width="36" height="26" fill="#fff" stroke="#1B2150" stroke-width="2"/>
+    <g fill="#1B2150"><rect x="0" y="0" width="9" height="8.67"/><rect x="18" y="0" width="9" height="8.67"/><rect x="9" y="8.67" width="9" height="8.67"/><rect x="27" y="8.67" width="9" height="8.67"/><rect x="0" y="17.33" width="9" height="8.67"/><rect x="18" y="17.33" width="9" height="8.67"/></g></g>
+  ${car('#E5382B', esc(cfg.carNo || '1'), 1.12, 104, 104)}
+  ${car('#2F6BFF','3',0.55,262,124)}
+</svg>`;
+}
+
+function sceneBike(){
+  return `<svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="A happy kid in a helmet riding a bicycle at sunset, with a small motorbike behind">
+  <defs><linearGradient id="bsk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF8FA3"/><stop offset=".6" stop-color="#FFC27A"/><stop offset="1" stop-color="#FFE9A8"/></linearGradient></defs>
+  <rect width="400" height="200" fill="url(#bsk)"/>
+  <circle cx="318" cy="92" r="30" fill="#FFF1A6"/>
+  ${star(40,36,6,'#fff','tw')}${star(120,22,4,'#fff','tw2')}${star(250,30,5,'#fff','tw')}${star(372,30,4,'#fff','tw2')}
+  <path d="M0 140 Q70 84 150 130 T300 118 T400 130 L400 160 L0 160Z" fill="#8B5CF6"/>
+  <path d="M0 150 Q90 112 190 146 T400 142 L400 170 L0 170Z" fill="#5B3FD1"/>
+  <rect y="160" width="400" height="40" fill="#3A3F5C"/>
+  <line x1="0" y1="181" x2="400" y2="181" stroke="#fff" stroke-width="3" stroke-dasharray="22 16"/>
+  <g transform="translate(300 144) scale(.62)">
+    <circle cx="-30" cy="0" r="17" fill="#1B2150"/><circle cx="-30" cy="0" r="7" fill="#CBD2F5"/>
+    <circle cx="30" cy="0" r="17" fill="#1B2150"/><circle cx="30" cy="0" r="7" fill="#CBD2F5"/>
+    <path d="M-34 -8 Q-10 -30 12 -18 L28 -4 L-6 -2Z" fill="#E5382B"/>
+    <path d="M-34 -18 L-6 -22 L-6 -16 L-34 -12Z" fill="#1B2150"/>
+    <line x1="26" y1="-2" x2="20" y2="-30" stroke="#1B2150" stroke-width="5" stroke-linecap="round"/>
+    <line x1="20" y1="-30" x2="32" y2="-34" stroke="#1B2150" stroke-width="5" stroke-linecap="round"/>
+    <ellipse cx="34" cy="-18" rx="5" ry="6" fill="#FFF3A8"/>
+  </g>
+  <g transform="translate(150 112) scale(1.05)">
+    <g fill="none" stroke="#1B2150" stroke-width="4"><circle cx="-38" cy="38" r="26"/><circle cx="38" cy="38" r="26"/></g>
+    <g stroke="#1B2150" stroke-width="1" opacity=".5"><line x1="-38" y1="12" x2="-38" y2="64"/><line x1="-64" y1="38" x2="-12" y2="38"/><line x1="38" y1="12" x2="38" y2="64"/><line x1="12" y1="38" x2="64" y2="38"/></g>
+    <g fill="none" stroke="#E5382B" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M-38 38 L-12 6 L26 8 L-4 38Z"/><path d="M-12 6 L-4 38"/><path d="M26 8 L38 38"/><path d="M26 8 L30 -2 L40 0"/></g>
+    <line x1="-18" y1="4" x2="-6" y2="4" stroke="#1B2150" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="-4" cy="38" r="5" fill="#1B2150"/>
+    <polyline points="-12,2 6,18 2,38" fill="none" stroke="#3B3F8F" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="-12" y1="2" x2="14" y2="-22" stroke="#FFC93C" stroke-width="12" stroke-linecap="round"/>
+    <line x1="14" y1="-22" x2="33" y2="-2" stroke="#F2B48C" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="20" cy="-34" r="10.5" fill="#F2B48C"/>
+    <path d="M9.5 -36 A10.5 10.5 0 0 1 30.5 -36 L28 -34 L11 -34Z" fill="#2F6BFF"/>
+    <circle cx="24" cy="-33" r="1.5" fill="#1B2150"/>
+    <path d="M18 -29 Q23 -25 28 -30" fill="none" stroke="#1B2150" stroke-width="1.8" stroke-linecap="round"/>
+  </g>
+</svg>`;
+}
+
+function sceneSports(){
+  const stripes = Array.from({length:8}, (_, i) => `<rect x="${i*50}" y="130" width="50" height="70" fill="${i%2?'#35B253':'#3DC25C'}"/>`).join('');
+  return `<svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="A smiling gold trophy with a football, a cricket bat and ball, and a medal on a sunny field">
+  <defs><linearGradient id="ssk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4FB3FF"/><stop offset="1" stop-color="#C9EBFF"/></linearGradient></defs>
+  <rect width="400" height="200" fill="url(#ssk)"/>
+  <g fill="#fff"><ellipse cx="90" cy="34" rx="30" ry="9"/><ellipse cx="108" cy="29" rx="18" ry="9"/><ellipse cx="330" cy="50" rx="26" ry="8"/></g>
+  ${stripes}
+  <path d="M0 150 L400 150" stroke="#fff" stroke-width="3" opacity=".7"/>
+  ${star(30,28,5,'#FFC93C','tw')}${star(375,24,5,'#FFC93C','tw2')}${star(210,22,4,'#fff','tw')}
+  <g transform="translate(46 60)"><path d="M-12 -2 L-20 -30 L-4 -30 L0 -8Z" fill="#E5382B"/><path d="M12 -2 L20 -30 L4 -30 L0 -8Z" fill="#2F6BFF"/>
+    <circle cx="0" cy="12" r="19" fill="#FFC93C" stroke="#E8A600" stroke-width="4"/>${star(0,12,10,'#fff')}</g>
+  <g transform="translate(206 92)" class="bob">
+    <g fill="none" stroke="#FFC93C" stroke-width="6" stroke-linecap="round"><path d="M-28 -30 Q-50 -30 -44 -10 Q-40 2 -24 0"/><path d="M28 -30 Q50 -30 44 -10 Q40 2 24 0"/></g>
+    <path d="M-30 -42 L30 -42 L25 2 Q22 18 0 22 Q-22 18 -25 2Z" fill="#FFC93C"/>
+    <path d="M-30 -42 L-22 -42 L-17 4 Q-15 14 -4 20 Q-22 16 -25 2Z" fill="#fff" opacity=".35"/>
+    <rect x="-6" y="22" width="12" height="16" fill="#E8A600"/><rect x="-24" y="38" width="48" height="12" rx="4" fill="#E8A600"/><rect x="-20" y="42" width="40" height="4" rx="2" fill="#FFC93C"/>
+    <circle cx="-9" cy="-20" r="3.2" fill="#1B2150"/><circle cx="9" cy="-20" r="3.2" fill="#1B2150"/>
+    <path d="M-9 -9 Q0 0 9 -9" fill="none" stroke="#1B2150" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="-17" cy="-12" r="3.5" fill="#FF8A80" opacity=".7"/><circle cx="17" cy="-12" r="3.5" fill="#FF8A80" opacity=".7"/>
+  </g>
+  <g transform="translate(110 158)">
+    <circle r="27" fill="#fff" stroke="#1B2150" stroke-width="3"/>
+    <polygon points="0,-10 9.5,-3 6,8 -6,8 -9.5,-3" fill="#1B2150"/>
+    <g stroke="#1B2150" stroke-width="3" stroke-linecap="round"><line x1="0" y1="-10" x2="0" y2="-26"/><line x1="9.5" y1="-3" x2="24" y2="-8"/><line x1="6" y1="8" x2="15" y2="21"/><line x1="-6" y1="8" x2="-15" y2="21"/><line x1="-9.5" y1="-3" x2="-24" y2="-8"/></g>
+  </g>
+  <g transform="translate(320 150) rotate(22)"><rect x="-8" y="-62" width="16" height="22" rx="4" fill="#1B2150"/><rect x="-14" y="-42" width="28" height="92" rx="8" fill="#E7B56B" stroke="#B5833A" stroke-width="2"/><line x1="0" y1="-38" x2="0" y2="44" stroke="#B5833A" stroke-width="2" opacity=".6"/></g>
+  <g transform="translate(284 176)"><circle r="11" fill="#E5382B"/><path d="M-9 -3 Q0 4 9 -3 M-9 3 Q0 10 9 3" fill="none" stroke="#fff" stroke-width="1.6"/></g>
+</svg>`;
+}
+
+function piggy(){
+  return `<g>
+    <path d="M-48 -4 q-16 -4 -10 -16 q5 -8 12 -2" fill="none" stroke="#B23A6B" stroke-width="4" stroke-linecap="round"/>
+    <rect x="-32" y="22" width="15" height="18" rx="6" fill="#FF7AA8"/><rect x="14" y="22" width="15" height="18" rx="6" fill="#FF7AA8"/>
+    <ellipse cx="0" cy="0" rx="50" ry="38" fill="#FF9BBF"/>
+    <path d="M12 -32 L24 -54 L34 -26Z" fill="#FF7AA8"/>
+    <ellipse cx="48" cy="4" rx="14" ry="12" fill="#FF7AA8"/>
+    <circle cx="44" cy="4" r="2.2" fill="#B23A6B"/><circle cx="52" cy="4" r="2.2" fill="#B23A6B"/>
+    <circle cx="30" cy="-10" r="4.5" fill="#1B2150"/><circle cx="31.5" cy="-11.5" r="1.4" fill="#fff"/>
+    <circle cx="20" cy="4" r="6.5" fill="#FF6B9B" opacity=".55"/>
+    <path d="M32 14 Q40 21 47 16" fill="none" stroke="#B23A6B" stroke-width="2.4" stroke-linecap="round"/>
+    <rect x="-14" y="-39" width="28" height="5" rx="2.5" fill="#B23A6B"/>
+  </g>`;
+}
+function sceneScience(){
+  const bub = [[70,92,3],[82,78,4],[66,66,2.5],[78,52,3]];
+  return `<svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="A smiling piggy bank dropping a coin, beside a bubbling science flask and a spinning atom">
+  <defs><linearGradient id="csk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2B2F9E"/><stop offset="1" stop-color="#0FA89B"/></linearGradient></defs>
+  <rect width="400" height="200" fill="url(#csk)"/>
+  <rect y="164" width="400" height="36" fill="#1B2150" opacity=".55"/>
+  ${star(24,30,5,'#FFE066','tw')}${star(170,24,4,'#fff','tw2')}${star(250,30,5,'#FFE066','tw')}${star(386,160,4,'#fff','tw2')}
+  <g transform="translate(70 120)">
+    ${bub.map((b,i)=>`<circle cx="${b[0]-70}" cy="${b[1]-120}" r="${b[2]}" fill="#B8FFE0" opacity=".9" class="${i%2?'tw':'tw2'}"/>`).join('')}
+    <path d="M-10 -32 L-10 -8 L-38 38 Q-42 46 -32 46 L32 46 Q42 46 38 38 L10 -8 L10 -32Z" fill="#E6F6FF" opacity=".35" stroke="#fff" stroke-width="3"/>
+    <path d="M-27 16 L-38 38 Q-42 46 -32 46 L32 46 Q42 46 38 38 L27 16Z" fill="#5BEA9B"/>
+    <rect x="-14" y="-36" width="28" height="6" rx="3" fill="#fff"/>
+    <circle cx="-7" cy="28" r="2.4" fill="#1B2150"/><circle cx="7" cy="28" r="2.4" fill="#1B2150"/>
+    <path d="M-6 35 Q0 40 6 35" fill="none" stroke="#1B2150" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(205 118)">${piggy()}</g>
+  <g class="bob"><circle cx="204" cy="40" r="13" fill="#FFC93C" stroke="#E8A600" stroke-width="3"/><text x="204" y="46" text-anchor="middle" font-family="Fredoka,Arial,sans-serif" font-weight="700" font-size="17" fill="#8A5A00">$</text></g>
+  <g transform="translate(335 70)" fill="none" stroke="#fff" stroke-width="2.4" opacity=".95">
+    <ellipse rx="34" ry="12"/><ellipse rx="34" ry="12" transform="rotate(60)"/><ellipse rx="34" ry="12" transform="rotate(120)"/>
+    <circle r="8" fill="#FF7A59" stroke="#fff"/>
+    <circle cx="34" cy="0" r="4.5" fill="#FFE066" stroke="none"/><circle cx="-17" cy="29" r="4.5" fill="#FFE066" stroke="none"/><circle cx="-17" cy="-29" r="4.5" fill="#FFE066" stroke="none"/>
+  </g>
+  <g transform="translate(350 150)" fill="#fff" opacity=".85"><circle r="9"/><circle r="4" fill="#2B2F9E"/><g stroke="#fff" stroke-width="4"><line x1="0" y1="-14" x2="0" y2="-9"/><line x1="0" y1="14" x2="0" y2="9"/><line x1="-14" y1="0" x2="-9" y2="0"/><line x1="14" y1="0" x2="9" y2="0"/></g></g>
+</svg>`;
+}
+
+/* ---------- login scene: Ridhaan in an open red sports car, more sports cars parked around ---------- */
+function carWheel(cx, cy, r, spin){
+  let sp = '';
+  for (let i = 0; i < 5; i++){ const a = i * Math.PI * 2 / 5 - Math.PI / 2; sp += `<line x1="${cx}" y1="${cy}" x2="${(cx + Math.cos(a) * r * .72).toFixed(1)}" y2="${(cy + Math.sin(a) * r * .72).toFixed(1)}" stroke="#6B7384" stroke-width="2"/>`; }
+  const w = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#14141C"/><circle cx="${cx}" cy="${cy}" r="${(r * .66).toFixed(1)}" fill="#D3D8E2"/>${sp}<circle cx="${cx}" cy="${cy}" r="${(r * .2).toFixed(1)}" fill="#3A3F4D"/>`;
+  return spin ? `<g class="a-wheel">${w}</g>` : w;
+}
+function parkedCar(x, y, s, col, accent, spoiler){
+  return `<g transform="translate(${x} ${y}) scale(${s})">
+    <ellipse cx="100" cy="1" rx="98" ry="5" fill="#000" opacity=".3"/>
+    ${spoiler ? `<path d="M2 -36 L24 -36 L23 -32 L3 -31Z" fill="${accent}"/><rect x="8" y="-32" width="3" height="8" fill="#222"/>` : ''}
+    <path d="M4 -12 C4 -21 14 -25 32 -27 L68 -31 C90 -50 132 -50 154 -35 L188 -29 C198 -27 199 -21 199 -13 L199 -8 L4 -8Z" fill="${col}"/>
+    <path d="M70 -33 C92 -48 130 -48 150 -37" fill="none" stroke="#fff" stroke-width="2" opacity=".4"/>
+    <path d="M75 -32 C92 -45 126 -45 145 -36 L133 -33 L81 -32Z" fill="#9FD3F5" stroke="#1E2230" stroke-width="1.2"/><line x1="108" y1="-44" x2="108" y2="-33" stroke="#1E2230" stroke-width="1.4"/>
+    <path d="M98 -26 L120 -20 L98 -17Z" fill="#14141C"/><rect x="4" y="-12" width="195" height="3" fill="#000" opacity=".22"/>
+    <path d="M185 -27 L199 -22 L185 -19Z" fill="#FFF7B0"/><rect x="3" y="-21" width="9" height="4" rx="1" fill="#FF3B3B"/>
+    <path d="M30 -12 A16 16 0 0 1 62 -12Z" fill="#101018"/><path d="M142 -12 A16 16 0 0 1 174 -12Z" fill="#101018"/>
+    ${carWheel(46, -12, 12)}${carWheel(158, -12, 12)}</g>`;
+}
+function kidHeadSvg(){
+  const c = prof.pics.ridhaan;
+  if (!c && (cfg.noDefault || !PHOTO.kid.head)) return `<g class="a-nod"><circle cx="103" cy="-62" r="14" fill="#F0BE96"/><path d="M89 -64 Q90 -79 103 -79 Q116 -79 117 -64 Q112 -71 103 -71 Q94 -71 89 -64Z" fill="#2B2230"/><circle cx="97.5" cy="-62" r="1.8" fill="#2B2230"/><circle cx="108.5" cy="-62" r="1.8" fill="#2B2230"/><path d="M97 -56 Q103 -51 109 -56" stroke="#B5544A" stroke-width="1.6" fill="none" stroke-linecap="round"/></g>`;
+  if (!c) return `<g class="a-nod"><image href="${PHOTO.kid.head}" x="91.48" y="-77.0" width="21.04" height="31.0" preserveAspectRatio="xMidYMid meet"/></g>`;
+  return `<clipPath id="kidClip"><circle cx="103" cy="-61" r="15"/></clipPath><g class="a-nod"><circle cx="103" cy="-61" r="16.4" fill="#FFFCF3"/><image href="${c.face}" x="88" y="-76" width="30" height="30" clip-path="url(#kidClip)" preserveAspectRatio="xMidYMid slice"/><circle cx="103" cy="-61" r="15.6" fill="none" stroke="#fff" stroke-width="2"/></g>`;
+}
+function heroFerrari(){
+  return `<g transform="translate(88 180) scale(1.12)">
+    <ellipse cx="100" cy="1" rx="100" ry="6" fill="#000" opacity=".34"/>
+    <g class="a-rumble">
+    <path d="M62 -33 Q70 -43 80 -33Z" fill="#B3271C"/>
+    <rect x="73" y="-56" width="15" height="28" rx="6" fill="#C58B4E" stroke="#8A5A2B" stroke-width="1.4"/><rect x="76" y="-62" width="9" height="9" rx="4" fill="#B67A3E" stroke="#8A5A2B" stroke-width="1.2"/>
+    <path d="M84 -30 Q84 -45 95 -46.5 L109 -46.5 Q120 -45 121 -30Z" fill="#F4F6FA"/><path d="M84.5 -38 Q86 -45 95 -46.5 L99 -46 Q92 -42 90 -33Z" fill="#E5382B"/>
+    <path d="M93 -46 L113 -31" stroke="#1C1C24" stroke-width="3.2" stroke-linecap="round" opacity=".85"/><path d="M96 -48 Q102 -43 108 -48" fill="none" stroke="#E5382B" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M97 -52 L107 -52 L108 -45 L96 -45Z" fill="#D9A27A"/>
+    <path d="M112 -43 L130 -38" stroke="#F4F6FA" stroke-width="6.4" stroke-linecap="round"/><circle cx="131" cy="-37.6" r="3.5" fill="#E3A87D"/>
+    ${kidHeadSvg()}
+    <path d="M3 -13 C3 -22 12 -26 28 -29 C50 -33 80 -33 100 -33 L124 -33 L128 -31 L146 -34 C168 -32 190 -27 197 -20 C200 -17 200 -13 199 -10 L199 -8 L3 -8Z" fill="#D8201A"/>
+    <path d="M10 -26 C40 -31 80 -31 124 -31" fill="none" stroke="#fff" stroke-width="1.8" opacity=".45"/><path d="M148 -33 C170 -31 188 -26 196 -20" fill="none" stroke="#fff" stroke-width="1.8" opacity=".4"/>
+    <path d="M128 -33 L144 -50 L149 -50 L139 -33Z" fill="#CBE9FF" opacity=".8" stroke="#2A2A35" stroke-width="1.5"/>
+    <ellipse cx="132" cy="-42" rx="3" ry="9" transform="rotate(-18 132 -42)" fill="none" stroke="#1C1C24" stroke-width="3"/>
+    <path d="M74 -23 L98 -18 L74 -13Z" fill="#14141C"/><path d="M106 -33 L108 -9" stroke="#000" stroke-width="1.4" opacity=".3"/>
+    <circle cx="121" cy="-21" r="7.5" fill="#fff"/><text x="121" y="-17" text-anchor="middle" font-family="Fredoka,Arial,sans-serif" font-weight="700" font-size="11" fill="#1B2150">${esc(cfg.carNo || '1')}</text>
+    <ellipse cx="172" cy="-23" rx="4" ry="5" fill="#FFD23C" stroke="#1C1C24" stroke-width="1"/>
+    <path d="M186 -25 L199 -21 L186 -18Z" fill="#FFF7B0"/>
+    <rect x="3" y="-22" width="9" height="4" rx="1" fill="#FF3B3B"/>
+    <circle cx="3" cy="-12" r="2.4" fill="#2A2A35"/><circle cx="3" cy="-17" r="2.4" fill="#2A2A35"/>
+    <path d="M30 -12 A16 16 0 0 1 62 -12Z" fill="#101018"/><path d="M142 -12 A16 16 0 0 1 174 -12Z" fill="#101018"/>
+    ${carWheel(46, -12, 12, 1)}${carWheel(158, -12, 12, 1)}</g>
+    <g fill="#fff"><circle class="puff" cx="-4" cy="-14" r="5"/><circle class="puff" style="animation-delay:-.8s" cx="-4" cy="-14" r="4"/><circle class="puff" style="animation-delay:-1.5s" cx="-4" cy="-14" r="5"/></g>
+  </g>`;
+}
+function sceneLogin(){
+  const dots = [[-90, 22, 1.5], [-30, 50, 1.2], [40, 18, 1.6], [130, 40, 1.3], [260, 24, 1.4], [330, 52, 1.5], [420, 20, 1.3], [490, 46, 1.4], [200, 14, 1.2]];
+  const back = [[-132, '#FFC400', '#222', 0], [-44, '#1F6FEB', '#fff', 1], [306, '#F2F4F8', '#E5382B', 0], [398, '#2B2B38', '#FFC400', 1], [8, '#FF7A1A', '#222', 0], [190, '#20B26B', '#222', 1]];
+  const front = [[-96, '#7A4BE6', '#FFC400', 1], [338, '#AEB6C4', '#E5382B', 0]];
+  return `<svg viewBox="-120 0 640 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="${esc(NAMES.ridhaan)} driving an open red sports car, with more sports cars parked around him at sunset">
+  <defs><linearGradient id="lgk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2A1B6E"/><stop offset=".55" stop-color="#B24FC2"/><stop offset="1" stop-color="#FF9A5C"/></linearGradient></defs>
+  <rect x="-120" width="640" height="200" fill="url(#lgk)"/>
+  ${dots.map((d, i) => `<circle cx="${d[0]}" cy="${d[1]}" r="${d[2]}" fill="#fff" class="${i % 2 ? 'tw' : 'tw2'}"/>`).join('')}
+  ${star(-60, 80, 5, '#FFC93C', 'tw')}${star(460, 76, 5, '#FFC93C', 'tw2')}
+  <circle cx="200" cy="128" r="46" fill="#FFD27A" opacity=".92"/><circle cx="200" cy="128" r="64" fill="#FFD27A" opacity=".18"/>
+  <path d="M-120 142 Q-40 106 40 128 T200 120 T360 126 T520 116 L520 146 L-120 146Z" fill="#4B2A8A"/>
+  <rect x="-120" y="144" width="640" height="56" fill="#2C2A47"/><rect x="-120" y="144" width="640" height="3" fill="#9B96C8"/>
+  <g fill="#fff" opacity=".18"><rect x="-100" y="190" width="40" height="3"/><rect x="-10" y="190" width="40" height="3"/><rect x="80" y="192" width="40" height="3"/><rect x="290" y="192" width="40" height="3"/><rect x="380" y="190" width="40" height="3"/><rect x="470" y="190" width="40" height="3"/></g>
+  ${back.map(c => parkedCar(c[0], 150, 0.56, c[1], c[2], c[3])).join('')}
+  ${front.map(c => parkedCar(c[0], 192, 0.8, c[1], c[2], c[3])).join('')}
+  <g class="a-drive">${heroFerrari()}</g>
+</svg>`;
+}
+
+
+/* ===== playful welcome scenes (animated with CSS inside the SVG) ===== */
+function balloon(x, y, g, delay){
+  return `<g class="a-float" style="animation-delay:${delay}s"><ellipse cx="${x}" cy="${y}" rx="15" ry="19" fill="url(#gBalloon${g})"/><path d="M${x - 3} ${y + 19} L${x + 3} ${y + 19} L${x} ${y + 24}Z" fill="#555" opacity=".7"/><path d="M${x} ${y + 24} Q${x - 6} ${y + 44} ${x + 2} ${y + 64}" fill="none" stroke="#6b6b7a" stroke-width="1"/><ellipse cx="${x - 5}" cy="${y - 7}" rx="3.6" ry="6" fill="#fff" opacity=".45"/></g>`;
+}
+function confettiSvg(){
+  const cols = ['#E5382B', '#FFC93C', '#2F6BFF', '#19C3B0', '#D63D78', '#7A5CFF', '#FF9A3C'];
+  let out = '';
+  for (let i = 0; i < 26; i++){
+    const x = -110 + (i * 97 % 630), d = 4 + (i * 7 % 5), delay = -((i * 13) % 60) / 10, w = 6 + (i % 3) * 2;
+    out += `<rect class="cf" x="${x}" y="-12" width="${w}" height="${(w * .5).toFixed(1)}" rx="1.2" fill="${cols[i % cols.length]}" style="animation-duration:${d}s;animation-delay:${delay}s"/>`;
+  }
+  return out;
+}
+function bgStairs(){
+  let s = `<rect x="-120" width="640" height="260" fill="#A85C2E"/>`;
+  for (let i = 0; i < 5; i++){ const y = i * 62; s += `<rect x="-120" y="${y}" width="640" height="54" fill="${i % 2 ? '#B8693A' : '#AD6034'}"/><rect x="-120" y="${y + 54}" width="640" height="8" fill="#6F3517"/><rect x="-120" y="${y}" width="640" height="3" fill="#D68A52" opacity=".7"/>`; }
+  s += `<g stroke="#7A3D1B" stroke-width="1" opacity=".25">${Array.from({length: 14}, (_, i) => `<path d="M-120 ${18 + i * 19} Q100 ${12 + i * 19} 260 ${22 + i * 19} T520 ${16 + i * 19}" fill="none"/>`).join('')}</g>`;
+  s += `<path d="M330 0 L520 0 L520 140Z" fill="#FFD98A" opacity=".28"/><path d="M-120 0 L40 0 L-120 90Z" fill="#FFD98A" opacity=".16"/>`;
+  return s;
+}
+function bgGarden(){
+  let s = `<rect x="-120" width="640" height="260" fill="url(#gGarden)"/>`;
+  s += `<path d="M390 0 L520 0 L520 80Z" fill="#C6D93A"/><path d="M390 0 L520 80" stroke="#A7BA25" stroke-width="3"/>`;
+  s += `<g fill="#3C8F4C" opacity=".75"><ellipse cx="-70" cy="120" rx="90" ry="60"/><ellipse cx="60" cy="140" rx="70" ry="48"/><ellipse cx="470" cy="130" rx="90" ry="60"/></g><g fill="#5FB35A"><ellipse cx="-10" cy="170" rx="80" ry="38"/><ellipse cx="420" cy="176" rx="90" ry="40"/></g>`;
+  s += `<g fill="#6B5A52"><rect x="-8" y="30" width="9" height="130"/><rect x="330" y="20" width="8" height="140"/></g><g fill="none" stroke="#8D7C74" stroke-width="3" opacity=".6"><path d="M-4 60 Q-40 40 -80 36M334 50 Q380 30 430 28M334 80 Q300 60 270 58"/></g>`;
+  s += `<g fill="#F26BA8" opacity=".95"><circle cx="410" cy="92" r="11"/><circle cx="428" cy="104" r="9"/><circle cx="440" cy="84" r="10"/><circle cx="458" cy="100" r="12"/><circle cx="390" cy="108" r="8"/></g><g fill="#FFB3D6"><circle cx="418" cy="96" r="4"/><circle cx="450" cy="92" r="4"/><circle cx="436" cy="106" r="3.5"/></g>`;
+  s += `<g fill="#FFD94A"><circle cx="372" cy="70" r="8"/></g><g fill="#FF8A3C"><circle cx="352" cy="82" r="6"/></g>`;
+  s += `<g class="a-float" style="animation-duration:6s"><g fill="#fff" opacity=".45"><circle cx="40" cy="60" r="12"/><circle cx="90" cy="38" r="8"/><circle cx="300" cy="46" r="10"/><circle cx="260" cy="82" r="7"/></g></g><g fill="#FFF7B0" opacity=".4"><circle cx="-60" cy="90" r="14"/><circle cx="120" cy="100" r="9"/></g>`;
+  s += `<g fill="#B8D2B0" opacity=".9"><ellipse cx="40" cy="236" rx="28" ry="9"/><ellipse cx="350" cy="240" rx="30" ry="9"/></g>`;
+  return s;
+}
+function bgCity(){
+  let s = `<rect x="-120" width="640" height="260" fill="url(#gCity)"/>`;
+  s += `<g class="a-float" style="animation-duration:9s" fill="#fff" opacity=".6"><ellipse cx="20" cy="42" rx="48" ry="12"/><ellipse cx="60" cy="34" rx="30" ry="11"/><ellipse cx="350" cy="58" rx="56" ry="13"/><ellipse cx="400" cy="48" rx="32" ry="11"/></g>`;
+  const b = [[-110, 120, 36, '#5B6E86'], [-70, 100, 40, '#6D8099'], [-26, 128, 34, '#4E617A'], [14, 90, 44, '#6D8099'], [62, 116, 36, '#566A84'], [296, 104, 38, '#5B6E86'], [338, 80, 48, '#6D8099'], [390, 112, 36, '#4E617A'], [430, 92, 42, '#5B6E86'], [476, 124, 40, '#6D8099']];
+  b.forEach(([x, y, w, c]) => { s += `<rect x="${x}" y="${y}" width="${w}" height="${260 - y}" fill="${c}"/>`; for (let wy = y + 8; wy < 215; wy += 12) for (let wx = x + 5; wx < x + w - 6; wx += 9) s += `<rect x="${wx}" y="${wy}" width="4" height="5" fill="#FFE9A8" opacity="${((wx * 7 + wy * 3) % 5 < 2) ? .75 : .18}"/>`; });
+  s += `<path d="M300 118 L312 78 L346 78 L358 118Z" fill="#B5A58F"/><rect x="298" y="118" width="62" height="100" fill="#C7BBA6"/>`;
+  s += `<path d="M-120 210 L520 210 L520 260 L-120 260Z" fill="#3E4C62" opacity=".55"/><path d="M-120 208 L520 208" stroke="#DCE6F2" stroke-width="3" opacity=".85"/>`;
+  s += `<g class="a-float" style="animation-duration:7s"><path d="M-80 70 l16 -3 l-3 -5 l22 3 l-4 6z" fill="#fff"/></g>`;
+  return s;
+}
+function sceneChar(kind, user){
+  const bg = {kid: bgStairs, mum: bgGarden, dad: bgCity}[kind]();
+  const nm = NAMES[user] || '';
+  const src = picFull(user);
+  const pic = src ? `<image href="${src}" x="110" y="29" width="180" height="218" preserveAspectRatio="xMidYMin slice"/>`
+    : `<circle cx="200" cy="118" r="62" fill="${avColor(user)}"/><text x="200" y="144" text-anchor="middle" font-family="Fredoka,'Trebuchet MS',sans-serif" font-weight="700" font-size="76" fill="#fff">${esc(initialOf(user))}</text>`;
+  const stars = [[-86, 40], [440, 36], [-60, 180], [470, 170], [30, 20], [370, 14]].map((p, i) => star(p[0], p[1], 8, i % 2 ? '#fff' : '#FFC93C', i % 2 ? 'tw' : 'tw2')).join('');
+  const card = `<g class="a-bob"><g class="a-swing">
+    <rect x="109" y="30" width="190" height="228" rx="8" fill="#000" opacity=".22"/>
+    <rect x="105" y="24" width="190" height="228" rx="8" fill="#FFFCF3" stroke="#E4DAC4" stroke-width="1.5"/>
+    ${pic}
+    <rect x="168" y="14" width="64" height="20" rx="2" fill="#F5D872" opacity=".92" transform="rotate(-3 200 24)"/>
+    <text x="200" y="243" text-anchor="middle" font-family="Fredoka,'Trebuchet MS',sans-serif" font-weight="600" font-size="17" fill="#2A2A3C">${esc(nm)}</text>
+    <path d="M170 248 Q200 252 230 247" stroke="#2A2A3C" stroke-width="1.4" fill="none" opacity=".5" stroke-linecap="round"/>
+    ${star(112, 38, 7, '#FFC93C', 'a-pulse')}${star(291, 62, 6, '#fff', 'a-pulse')}${star(292, 226, 7, '#FFC93C', 'a-pulse')}</g></g>`;
+  return `<svg viewBox="-120 0 640 260" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Portrait of ${esc(nm)}, pinned up like a drawing, with balloons, bunting and confetti">${bg}${confettiSvg()}${balloon(-70, 96, 'R', 0)}${balloon(-30, 130, 'Y', -1.2)}${balloon(440, 92, 'B', -.6)}${balloon(478, 136, 'G', -2)}${stars}${card}</svg>`;
+}
+function buntingSvg(){
+  const cols = ['#E5382B','#FFC93C','#2F6BFF','#19C3B0','#D63D78','#7A5CFF','#FF9A3C'];
+  let f = '';
+  for (let i = 0; i < 12; i++){
+    const x = 18 + i * 33, y = 2 + 24 * (1 - Math.pow((x - 200) / 200, 2)) * 0.92;
+    f += `<path d="M${x - 9} ${y.toFixed(1)} L${x + 9} ${y.toFixed(1)} L${x} ${(y + 17).toFixed(1)}Z" fill="${cols[i % cols.length]}"/>`;
+  }
+  return `<svg class="bunting" viewBox="0 0 400 34" preserveAspectRatio="none" aria-hidden="true"><path d="M0 2 C90 34 310 34 400 2" fill="none" stroke="#fff" stroke-width="1.6" opacity=".85"/>${f}</svg>`;
+}
+const BUNTING = buntingSvg();
+function scene(kind){
+  if (kind === 'welcome'){
+    return `<div class="scene tall">${sceneChar(KEY2[session.user] || 'mum', session.user)}${BUNTING}</div>`;
+  }
+  return `<div class="scene">${({space:sceneSpace, race:sceneRace, bike:sceneBike, sports:sceneSports, science:sceneScience, login:sceneLogin})[kind]()}${BUNTING}</div>`;
+}
+
+/* ---------- shared bits ---------- */
+function syncChip(){
+  return `<p class="foot" data-sync>${esc(syncText())}</p>`;
+}
+function awardRow(e, withUndo){
+  const a = ACTS[e.act];
+  return `<div class="cheer"><div class="ico" aria-hidden="true">${a.emoji}</div>
+    <div class="tx"><b>${esc(a.name)}</b><span><span class="chipwho who-${e.who}" aria-hidden="true">${esc(WHO[e.who].charAt(0).toUpperCase())}</span>${WHO[e.who]} · ${fmtDate(e.ts)}${e.note ? ' · ' + esc(e.note) : ''}</span></div>
+    <div class="pts" style="color:${e.pts < 0 ? 'var(--bad)' : 'var(--good)'}">${e.pts < 0 ? '−' : '+'}${num(Math.abs(e.pts))}</div>
+    ${withUndo ? `<button class="undo" data-a="undo" data-id="${esc(e.id)}" aria-label="Undo this award">Undo</button>` : ''}</div>`;
+}
+function parentsOnly(kind, title, sub){
+  return scene(kind) + head(title, '<p>' + sub + '</p>') + `<div class="wrap"><div class="card lockcard"><div class="big" aria-hidden="true">🔒</div>
+    <h3>Just for ${esc(NAMES.mumma)} &amp; ${esc(NAMES.bapu)}</h3><p>Please log in as ${esc(NAMES.mumma)} or ${esc(NAMES.bapu)} to use this page.</p>
+    <button class="btn blue" data-a="logout" style="margin:0 auto">Switch to ${esc(NAMES.mumma)} / ${esc(NAMES.bapu)}</button></div>${syncChip()}</div>`;
+}
+function topbar(){
+  return `<div class="topbar"><span><span aria-hidden="true">${av(session.user)}</span> Logged in as <b>${NAMES[session.user]}</b></span>
+    <span class="tbtns">${isAdmin() ? '<button class="iconbtn" data-a="goAdmin">⚙️ Admin</button>' : ''}<button class="iconbtn" data-a="fxToggle" aria-label="${fx.muted ? 'Turn sound on' : 'Turn sound off'}">${fx.muted ? '🔇' : '🔊'}</button><button class="iconbtn" data-a="changePin">Change PIN</button><button class="iconbtn" data-a="logout">Log out</button></span></div>`;
+}
+function head(h, p, tag='h2'){ return `<div class="head"><${tag}>${h}</${tag}>${p}</div>`; }
+
+/* ---------- login, PIN and welcome screens ---------- */
+function viewSetup(){
+  const p1 = ui.su_p1.trim() || 'Parent 1', p2 = ui.su_p2.trim() || 'Parent 2';
+  return scene('space') + `<div class="head"><h1>Let's set up ✨</h1><p>Tell the app about your family. You can change all of this later in Admin.</p></div>
+  <div class="wrap"><div class="card">
+    <div class="lbl">Child's name</div><input class="field" type="text" maxlength="24" placeholder="e.g. Aarav" aria-label="Child's name" data-bind="su_child" value="${esc(ui.su_child)}">
+    <div class="lbl">Pet name for the greeting (optional)</div><input class="field" type="text" maxlength="24" placeholder="e.g. Champ" aria-label="Pet name" data-bind="su_nick" value="${esc(ui.su_nick)}">
+    <div class="lbl">First parent's name</div><input class="field" type="text" maxlength="24" placeholder="e.g. Mum" aria-label="First parent's name" data-bind="su_p1" value="${esc(ui.su_p1)}">
+    <div class="lbl">Second parent's name</div><input class="field" type="text" maxlength="24" placeholder="e.g. Dad" aria-label="Second parent's name" data-bind="su_p2" value="${esc(ui.su_p2)}">
+    <div class="lbl">Who is the master admin?</div>
+    <div class="chips"><button class="chip ${ui.su_master === 'mumma' ? 'on' : ''}" data-a="suMaster" data-v="mumma" aria-pressed="${ui.su_master === 'mumma'}">${esc(p1)}</button><button class="chip ${ui.su_master !== 'mumma' ? 'on' : ''}" data-a="suMaster" data-v="bapu" aria-pressed="${ui.su_master !== 'mumma'}">${esc(p2)}</button></div>
+    <p class="mut" style="font-size:14px;margin-top:6px">The master admin can reset the app and share admin access.</p>
+    <div class="two"><div><div class="lbl">1 point is worth (cents)</div><input class="field" type="number" inputmode="decimal" min="0.01" step="0.01" aria-label="Cents per point" data-bind="su_rate" value="${esc(ui.su_rate)}"></div>
+      <div><div class="lbl">Piggy money ($)</div><input class="field" type="number" inputmode="decimal" min="0" step="0.01" aria-label="Piggy bank money to start with" data-bind="su_piggy" value="${esc(ui.su_piggy)}"></div></div>
+    <div class="lbl">Number on the sports car (optional)</div><input class="field" style="max-width:120px" type="text" maxlength="2" aria-label="Car number" data-bind="su_car" value="${esc(ui.su_car)}">
+    <p class="mut" style="font-size:14px;margin-top:10px">Pictures can be added afterwards in Admin &gt; Names &amp; pictures. Everyone picks their own PIN the first time they log in.</p>
+    <div style="margin-top:14px"><button class="btn blue" id="suBtn" data-a="suDone">Start the Star Log 🚀</button></div>
+    ${SYNC_ENABLED && !sync.on ? '<div style="margin-top:12px"><button class="btn ghost" data-a="goConnect">🌐 Already set up on another device? Connect</button></div>' : ''}
+  </div></div>`;
+}
+function viewLogin(){
+  const pr = (u, sub) => `<button class="prof" data-a="pick" data-v="${u}"><span class="av" aria-hidden="true">${av(u)}</span>
+    <span><span class="nm2">${NAMES[u]}</span><span class="sb">${sub}</span></span></button>`;
+  const carScene = scene('login').replace(/<\/div>$/, '<button class="carbtn" data-a="rev" aria-label="Make the red sports car go vroom"></button></div>');
+  return carScene + `<div class="head"><h1>Hello! 👋</h1><p>Who is logging in today?</p><p class="hint">🏎️ Tap the red car to hear it go vroom!</p></div>
+    <div class="wrap"><div class="profiles">
+      ${pr('ridhaan', pins.ridhaan ? 'Enter your PIN' : 'First time? Set up your PIN')}
+      ${pr('mumma', pins.mumma ? 'Enter your PIN' : 'First time? Set up your PIN')}
+      ${pr('bapu', pins.bapu ? 'Enter your PIN' : 'First time? Set up your PIN')}
+      ${(admin.helpers || []).map(hp => pr(hp.id, pins[hp.id] ? 'Enter your PIN' : 'First time? Set up your PIN')).join('')}
+    </div>${SYNC_ENABLED && !sync.on ? '<button class="btn ghost" data-a="goConnect" style="margin-top:12px">🌐 Connect this device to online sync</button>' : ''}${syncChip()}</div>`;
+}
+function viewAuth(){
+  const a = ui.auth, nm = NAMES[a.user];
+  const T = {
+    enter:['Welcome back, ' + nm, 'Enter your PIN to log in.', 'Log in', ''],
+    set1:['Hi ' + nm + '! Create a PIN', 'Choose 4 to 6 numbers you will remember.', 'Next', 'Step 1 of 2'],
+    set2:['Confirm your PIN', 'Type the same PIN again.', 'Save PIN and log in', 'Step 2 of 2'],
+    old:['Change your PIN', 'First, type your current PIN.', 'Next', 'Step 1 of 3'],
+    new:['Choose a new PIN', 'Use 4 to 6 numbers.', 'Next', 'Step 2 of 3'],
+    confirm:['Confirm your new PIN', 'Type the new PIN again.', 'Save new PIN', 'Step 3 of 3']
+  }[a.step];
+  return scene('login') + `<div class="wrap" style="margin-top:14px"><div class="card authcard">
+    <div class="big" aria-hidden="true">${av(a.user)}</div>
+    ${T[3] ? `<div class="step">${T[3]}</div>` : ''}<h3>${esc(T[0])}</h3><p>${T[1]}</p>
+    <input id="pinIn" class="field pinfield" type="password" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="••••" aria-label="PIN">
+    <div class="err" role="alert">${esc(ui.authErr)}</div>
+    <button class="btn blue" data-a="authNext">${T[2]}</button>
+    <div style="margin-top:12px"><button class="btn ghost" data-a="authBack">Back</button></div></div>${syncChip()}</div>`;
+}
+function viewWelcome(c){
+  const nm = NAMES[session.user], kid = session.user === 'ridhaan', fresh = ui.wlFresh, needPin = kid || !fresh;
+  let body;
+  if (!kid && fresh){
+    body = `<h3>Hi ${esc(nm)}! 👋</h3>
+      <p class="mut" style="margin-bottom:14px">${esc(NAMES.ridhaan)} has <b>${num(c.balPts)} points</b> (${money(c.pointsC)}) right now.</p>
+      <button class="btn blue" data-a="wlFinish">Go to Home</button>`;
+  } else if (ui.wlStage === 'ask'){
+    body = `<h3>Do you want to redeem points?</h3>
+      <p class="mut" style="margin-bottom:14px">There are <b>${num(c.balPts)} points</b> (${money(c.pointsC)}) ready to use.</p>
+      <div class="two"><button class="btn green" data-a="wlYes">Yes, please</button><button class="btn ghost" style="width:100%" data-a="wlNo">Not now</button></div>
+      <button class="btn ghost" style="width:100%;margin-top:12px" data-a="fxHear">👏 Hear the welcome again</button>`;
+  } else if (ui.wlStage === 'points'){
+    body = `<h3>How many points?</h3>
+      <p class="mut">There are <b>${num(c.balPts)} points</b> to use. 1 point = ${fmtRate()}.</p>
+      <div class="chips" style="margin-top:10px">${[20,50,100].map(n => `<button class="chip" data-a="wlChip" data-v="${n}">${n}</button>`).join('')}<button class="chip" data-a="wlChip" data-v="${c.balPts}">All</button></div>
+      <input id="wlIn" class="field" style="margin-top:10px" type="number" inputmode="numeric" min="1" step="1" placeholder="Points to redeem" aria-label="Points to redeem" data-bind="wlPts" value="${esc(ui.wlPts)}">
+      ${needPin ? `<div class="lbl">${kid ? NAMES.mumma + ' or ' + NAMES.bapu + ' PIN to approve' : 'Your PIN to confirm'}</div><input class="field" style="max-width:200px" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="••••" aria-label="${kid ? 'Parent PIN' : 'Your PIN'}" data-bind="wlPin" value="${esc(ui.wlPin)}">` : ''}
+      <div class="preview" id="wlPrev"></div><div class="err" id="wlErr" role="alert"></div>
+      <div class="two" style="margin-top:6px"><button class="btn green" id="wlBtn" data-a="wlRedeem">Redeem points</button><button class="btn ghost" style="width:100%" data-a="wlBack">Back</button></div>`;
+  } else {
+    body = `<h3>Done! 🎟️</h3>
+      <p>Redeemed <b>${num(ui.wlDone)} points</b> = ${money(ui.wlDone*RATE_C)}.</p>
+      <p style="margin:8px 0 14px">Balance points now: <b>${num(c.balPts)}</b> (${money(c.pointsC)})</p>
+      <button class="btn blue" data-a="wlFinish">Go to my log</button>`;
+  }
+  const wm = msgFor(session.user, ui.first);
+  const top = fresh ? scene('welcome') + `<div class="head"><h2 class="${wm.length > 32 ? 'long' : ''}">${esc(wm)}</h2></div>`
+                    : scene('space') + head('Redeem my points 🎟️', '<p>Swap points for $$.</p>');
+  return top + `<div class="wrap"><div class="card">${body}</div></div>`;
+}
+
+/* ---------- pages ---------- */
+function pageHome(c){
+  const recent = events.filter(e => e.type === 'award').slice(-4).reverse();
+  return scene('space') + `<div class="head"><h1>Welcome ${NAMES[session.user]}!!</h1>
+      <p>${session.user === 'ridhaan' ? 'This is your personal log of good efforts :)' : `This is ${esc(NAMES.ridhaan)}'s personal log of good efforts :)`}</p>
+      <p class="love">${session.user === 'ridhaan' ? `${esc(NAMES.mumma)} &amp; ${esc(NAMES.bapu)} appreciate your wonderful efforts with love` : 'Cheer on his wonderful efforts with love'}</p></div>
+    <div class="wrap">
+      <div class="tiles">
+        <div class="tile t-pts"><span class="em" aria-hidden="true">⭐</span><span class="lab">My Points</span>
+          <div><div class="num" data-count="${c.balPts}" data-kind="n">${num(c.balPts)}</div><div class="sub">${num(c.totalPts)} earned − ${num(c.redeemPts)} redeemed</div></div></div>
+        <div class="tile t-val"><span class="em" aria-hidden="true">🪙</span><span class="lab">Redeem Value</span>
+          <div><div class="num" data-count="${c.pointsC}" data-kind="m">${money(c.pointsC)}</div><div class="sub">My points are worth this</div></div></div>
+        <div class="tile t-pig"><span class="em" aria-hidden="true">🐷</span><span class="lab">My Piggy Kitty</span>
+          <div><div class="num" data-count="${c.piggyC}" data-kind="m">${money(c.piggyC)}</div><div class="sub">${money(c.piggyInC)} in − ${money(c.spentC)} spent</div></div></div>
+        <div class="tile t-pts" style="background:#6A4BEF"><span class="em" aria-hidden="true">🎯</span><span class="lab">Point Power</span>
+          <div><div class="num">${fmtRate()}</div><div class="sub">Every point is worth ${fmtRate()}</div></div></div>
+        <div class="tile t-money"><span class="em" aria-hidden="true">💰</span>
+          <div><span class="lab">My $$</span><div class="num" data-count="${c.moneyC}" data-kind="m">${money(c.moneyC)}</div>
+          <div class="sumline" style="margin-top:8px"><span class="pill">${money(c.pointsC)} points</span><span class="pill">+ ${money(c.piggyC)} piggy</span></div></div></div>
+      </div>
+      ${session.user === 'ridhaan' ? '<div class="card"><button class="btn green" data-a="homeRedeem">🎟️ Redeem my points</button></div>' : ''}
+      <div class="card"><h3>Latest cheers 🎉</h3>
+        ${recent.length ? recent.map(e => awardRow(e,false)).join('') : `<p class="empty">Your next cheer from ${esc(NAMES.mumma)} or ${esc(NAMES.bapu)} will show up here.</p>`}
+      </div>
+      ${syncChip()}
+    </div>`;
+}
+
+function pageLog(c){
+  const rows = GROUPS.map(g => {
+    let gp = 0; g.acts.forEach(a => gp += c.tot[a[0]].b + c.tot[a[0]].m);
+    const share = c.totalPts ? Math.round(gp / c.totalPts * 100) : 0;
+    return `<section class="grp" style="--g:${g.color}" aria-label="${esc(g.name)}">
+      <div class="gh"><span>${esc(g.name)}</span><b>${num(gp)} pts · ${money(gp*RATE_C)}</b></div>
+      <div class="bar" title="${share}% of all my points"><i style="width:${share}%"></i></div>
+      <div class="row hd" aria-hidden="true"><span></span><span>${esc(NAMES.bapu)}</span><span>${esc(NAMES.mumma)}</span><span>Points</span><span>$ Value</span></div>
+      ${g.acts.map(a => { const t = c.tot[a[0]], s = t.b + t.m;
+        const tg = isParent() ? 'button' : 'div', at = isParent() ? ` class="row rowbtn" data-a="rowAward" data-v="${a[0]}" aria-label="Give points for ${esc(a[1])}"` : ' class="row"';
+        return `<${tg}${at}><span class="nm"><em aria-hidden="true">${a[2]}</em>${esc(a[1])}</span><span>${num(t.b)}</span><span>${num(t.m)}</span><span class="tot">${num(s)}</span><span>${money(s*RATE_C)}</span></${tg}>`; }).join('')}
+    </section>`;
+  }).join('');
+  return scene('race') + head('My Race Log', '<p>' + (isParent() ? 'Tap an activity to give points for it.' : 'Every good effort pushes my racing score further.') + '</p>') + `<div class="wrap">${rows}
+    <div class="card"><h3>My points bank 🏁</h3><div class="bank">
+      <div class="b"><span>Total points</span><b>${num(c.totalPts)} pts · ${money(c.totalValC)}</b></div>
+      <div class="b"><span>Redeemed points</span><b>− ${num(c.redeemPts)} pts · ${money(c.redeemValC)}</b></div>
+      <div class="b last"><span>Balance points</span><b>${num(c.balPts)} pts · ${money(c.pointsC)}</b></div></div></div>
+    ${syncChip()}</div>`;
+}
+
+function amtVal(){ const n = ui.custom !== '' ? Math.trunc(Number(ui.custom)) : ui.amt; if (!isFinite(n) || !n) return 0; return ui.sign < 0 ? -Math.abs(n) : n; }
+function changeRow(e, withUndo){
+  if (e.type === 'award') return awardRow(e, withUndo);
+  const a = ACTS[e.act], neg = e.delta < 0;
+  return `<div class="cheer"><div class="ico" aria-hidden="true">✏️</div>
+    <div class="tx"><b>${esc(a.name)} edited</b><span><span class="chipwho who-${e.who}" aria-hidden="true">${esc(WHO[e.who].charAt(0).toUpperCase())}</span>${WHO[e.who]}'s points · ${fmtDate(e.ts)}${e.note ? ' · ' + esc(e.note) : ''}</span></div>
+    <div class="pts" style="color:${neg ? 'var(--bad)' : 'var(--good)'}">${neg ? '−' : '+'}${num(Math.abs(e.delta))}</div>
+    ${withUndo ? `<button class="undo" data-a="undo" data-id="${esc(e.id)}" aria-label="Undo this edit">Undo</button>` : ''}</div>`;
+}
+function pageAward(){
+  if (!isParent()) return parentsOnly('bike', 'Parents\' Pit Stop', NAMES.mumma + ' &amp; ' + NAMES.bapu + ', award points for great efforts.');
+  const g = GROUPS.find(x => x.id === ui.cat);
+  const recent = events.filter(e => e.type === 'award' || e.type === 'adjust').slice(-6).reverse();
+  const opts = GROUPS.map(gr => `<optgroup label="${esc(gr.name)}">${gr.acts.map(a => `<option value="${a[0]}" ${ui.edAct === a[0] ? 'selected' : ''}>${esc(a[1])}</option>`).join('')}</optgroup>`).join('');
+  return scene('bike') + `<div class="head"><h2>Parents' Pit Stop</h2>
+    <p>Logged in as <span class="chipwho who-${myWho()}" aria-hidden="true">${esc(WHO[myWho()].charAt(0).toUpperCase())}</span><b>${NAMES[session.user]}</b>. Every change to points needs your PIN.</p></div>
+    <div class="wrap"><div class="card"><h3>⭐ Give or take away points</h3>
+      <div class="lbl">What is it for?</div>
+      <div class="chips">${GROUPS.map(x => `<button class="chip ${ui.cat===x.id?'on':''}" data-a="cat" data-v="${x.id}" aria-pressed="${ui.cat===x.id}">${esc(x.name)}</button>`).join('')}</div>
+      ${g ? `<div class="chips" style="margin-top:10px">${g.acts.map(a => `<button class="chip ${ui.act===a[0]?'on':''}" data-a="act" data-v="${a[0]}" aria-pressed="${ui.act===a[0]}"><span aria-hidden="true">${a[2]}</span>${esc(a[1])}</button>`).join('')}</div>` : ''}
+      <div class="lbl">Give or take away?</div>
+      <div class="chips"><button class="chip ${ui.sign >= 0 ? 'on' : ''}" data-a="sign" data-v="1" aria-pressed="${ui.sign >= 0}">➕ Give points</button><button class="chip ${ui.sign < 0 ? 'on' : ''}" data-a="sign" data-v="-1" aria-pressed="${ui.sign < 0}">➖ Take away points</button></div>
+      <div class="lbl">How many points?</div>
+      <div class="chips">${[10,25,50,100].map(n => `<button class="chip" data-a="amt" data-v="${n}" data-amt="${n}">${n}</button>`).join('')}
+        <input class="field" style="width:120px" type="number" inputmode="numeric" step="1" placeholder="Other" aria-label="Custom points" data-bind="custom" value="${esc(ui.custom)}"></div>
+      <div class="preview" id="awPrev"></div>
+      <div class="lbl">A little note (optional)</div>
+      <input class="field" type="text" maxlength="60" placeholder="e.g. Finished without being asked" data-bind="note" value="${esc(ui.note)}">
+      <div class="lbl">Your PIN</div>${pinIn('pinAw', 'Your PIN to give points')}
+      <div style="margin-top:16px"><button class="btn" id="awBtn" data-a="award">Give points ⭐</button></div>
+    </div>
+    <div class="card"><h3>✏️ Edit points</h3><p class="mut">Set the total for one activity in ${esc(NAMES.mumma)}'s or ${esc(NAMES.bapu)}'s column.</p>
+      <div class="lbl">Activity</div>
+      <select class="field" data-bind="edAct" aria-label="Activity to edit"><option value="">Choose an activity</option>${opts}</select>
+      <div class="lbl">Whose column?</div>
+      <div class="whobtns"><button class="whobtn ${ui.edCol==='m'?'on':''}" data-a="edCol" data-v="m" aria-pressed="${ui.edCol==='m'}"><span class="chipwho who-m">${esc(WHO.m.charAt(0).toUpperCase())}</span>${esc(WHO.m)}</button>
+        <button class="whobtn ${ui.edCol==='b'?'on':''}" data-a="edCol" data-v="b" aria-pressed="${ui.edCol==='b'}"><span class="chipwho who-b">${esc(WHO.b.charAt(0).toUpperCase())}</span>${esc(WHO.b)}</button></div>
+      <div class="preview" id="edCur"></div>
+      <div class="lbl">New total points</div>
+      <input class="field" style="max-width:200px" type="number" inputmode="numeric" min="0" step="1" placeholder="e.g. 120" aria-label="New total points" data-bind="edNew" value="${esc(ui.edNew)}">
+      <div class="lbl">Your PIN</div>${pinIn('pinEd', 'Your PIN to edit points')}
+      <div style="margin-top:16px"><button class="btn pur" id="edBtn" data-a="edSave">Save points</button></div>
+    </div>
+    <div class="card"><h3>🪙 Point value</h3><p class="mut">Right now 1 point = <b>${fmtRate()}</b>. Changing it updates every dollar amount.</p>
+      <div class="lbl">Cents per point</div>
+      <input class="field" style="max-width:200px" type="number" inputmode="decimal" min="0.01" step="0.01" placeholder="e.g. 1" aria-label="Cents per point" data-bind="rateIn" value="${esc(ui.rateIn)}">
+      <div class="preview" id="ratePrev"></div>
+      <div class="lbl">Your PIN</div>${pinIn('pinRate', 'Your PIN to change the point value')}
+      <div style="margin-top:16px"><button class="btn blue" id="rateBtn" data-a="rateSave">Save point value</button></div>
+    </div>
+    <div class="card"><h3>Recent changes</h3>${recent.length ? recent.map(e => changeRow(e,true)).join('') : '<p class="empty">No new changes yet.</p>'}</div>
+    <div class="card"><h3>👦 ${esc(NAMES.ridhaan)}'s PIN</h3><p class="mut">If ${esc(NAMES.ridhaan)} forgets his PIN, reset it. He will make a new one the next time he logs in.</p>
+      <div class="lbl">Your PIN</div>${pinIn('pinKid', 'Your PIN to reset ' + NAMES.ridhaan + '\'s PIN')}
+      <div style="margin-top:12px"><button class="btn ghost" id="kidBtn" data-a="kidReset">Reset ${esc(NAMES.ridhaan)}'s PIN</button></div></div>
+    ${syncChip()}</div>`;
+}
+
+function histRow(it, canUndo){
+  const ico = {redeem:'🎟️', expense:'🛍️', deposit:'🐷'}[it.type];
+  const title = {redeem:'Redeemed ' + num(it.pts || 0) + ' points', expense:'Spent from piggy', deposit:'Added to piggy'}[it.type];
+  const val = it.type === 'redeem' ? '− ' + money((it.pts||0)*RATE_C) : (it.type === 'expense' ? '− ' : '+ ') + money(it.cents||0);
+  const cls = it.type === 'deposit' ? 'plus' : 'minus';
+  return `<div class="cheer"><div class="ico" aria-hidden="true">${ico}</div>
+    <div class="tx"><b>${title}</b><span>${fmtDate(it.ts)}${it.note ? ' · ' + esc(it.note) : ''}</span></div>
+    <div class="pts ${cls}" style="color:inherit">${val}</div>
+    ${canUndo && it.id ? `<button class="undo" data-a="undo" data-id="${esc(it.id)}" aria-label="Undo this entry">Undo</button>` : ''}</div>`;
+}
+function historyItems(){
+  const base = [
+    {type:'redeem', pts:BASE.redeemPts, ts:0, note:'', id:''},
+    {type:'expense', cents:cfg.expenseC, ts:0, note:'', id:''},
+    {type:'deposit', cents:cfg.piggyC, ts:0, note:'Piggy start', id:''}
+  ];
+  const keep = base.filter(it => it.type === 'redeem' ? it.pts > 0 : it.cents > 0);
+  return events.filter(e => e.type !== 'award' && e.type !== 'adjust').slice().reverse().concat(keep);
+}
+
+function pagePrize(c){
+  if (!isParent()) return parentsOnly('sports', 'Prize Shop', 'Swap points for $$ or note down piggy spending.');
+  const hist = events.filter(e => e.type !== 'award' && e.type !== 'adjust').slice(-6).reverse();
+  return scene('sports') + `<div class="head"><h2>Prize Shop</h2>
+    <p>I have <b>${num(c.balPts)} points</b> (${money(c.pointsC)}) and <b>${money(c.piggyC)}</b> in my piggy.</p></div>
+    <div class="wrap">
+      <div class="card"><h3>🎟️ Cash in points</h3>
+        <div class="chips">${[20,50,100,200].map(n => `<button class="chip" data-a="rdChip" data-v="${n}">${n}</button>`).join('')}<button class="chip" data-a="rdChip" data-v="${c.balPts}">All</button></div>
+        <div style="margin-top:10px" class="two"><input class="field" id="rdIn" type="number" inputmode="numeric" min="1" step="1" placeholder="Points" aria-label="Points to redeem" data-bind="rd" value="${esc(ui.rd)}">
+          <input class="field" type="text" maxlength="60" placeholder="Note (optional)" aria-label="Note" data-bind="rdNote" value="${esc(ui.rdNote)}"></div>
+        <div class="preview" id="rdPrev"></div><div class="lbl">Your PIN</div>${pinIn('pinRd', 'Your PIN to redeem points')}
+        <div style="margin-top:10px"><button class="btn green" id="rdBtn" data-a="redeem">Cash in points</button></div></div>
+      <div class="card"><h3>🛍️ Spent from piggy</h3>
+        <div class="two"><input class="field" id="spIn" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Amount $" aria-label="Amount spent in dollars" data-bind="sp" value="${esc(ui.sp)}">
+          <input class="field" type="text" maxlength="60" placeholder="What was it for?" aria-label="What it was for" data-bind="spNote" value="${esc(ui.spNote)}"></div>
+        <div class="preview" id="spPrev"></div>
+        <div style="margin-top:10px"><button class="btn pur" id="spBtn" data-a="spend">Record spending</button></div></div>
+      <div class="card"><h3>🐷 Add money to piggy</h3>
+        <div class="two"><input class="field" id="dpIn" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Amount $" aria-label="Amount to add in dollars" data-bind="dp" value="${esc(ui.dp)}">
+          <input class="field" type="text" maxlength="60" placeholder="From whom? (optional)" aria-label="Note" data-bind="dpNote" value="${esc(ui.dpNote)}"></div>
+        <div class="preview" id="dpPrev"></div>
+        <div style="margin-top:10px"><button class="btn blue" id="dpBtn" data-a="deposit">Add to piggy</button></div></div>
+      <div class="card"><h3>Recent changes</h3>${hist.length ? hist.map(e => histRow(e,true)).join('') : '<p class="empty">Nothing new yet.</p>'}</div>
+      ${syncChip()}</div>`;
+}
+
+function pagePiggy(c){
+  const items = historyItems();
+  return scene('science') + head('My Piggy Kitty Lab', '<p>See exactly where my $$ comes from.</p>') + `<div class="wrap">
+    <div class="card"><div class="big-pig"><div aria-hidden="true" style="font-size:54px;line-height:1">🐷</div>
+      <div><div class="amt">${money(c.piggyC)}</div><small>Piggy balance · ${money(c.piggyInC)} in, ${money(c.spentC)} spent</small></div></div></div>
+    <div class="card eq"><h3>How my $$ adds up 🔬</h3>
+      <div class="e"><div class="ic" aria-hidden="true">⭐</div><div class="tx"><b>Points earned</b><span>${num(c.totalPts)} points × ${fmtRate()}</span></div><div class="v plus">+ ${money(c.totalValC)}</div></div>
+      <div class="e"><div class="ic" aria-hidden="true">🎟️</div><div class="tx"><b>Points redeemed</b><span>${num(c.redeemPts)} points taken as cash</span></div><div class="v minus">− ${money(c.redeemValC)}</div></div>
+      <div class="e"><div class="ic" aria-hidden="true">🐷</div><div class="tx"><b>Piggy money in</b><span>Piggy start + money added</span></div><div class="v plus">+ ${money(c.piggyInC)}</div></div>
+      <div class="e"><div class="ic" aria-hidden="true">🛍️</div><div class="tx"><b>Piggy spending</b><span>Spent from the piggy</span></div><div class="v minus">− ${money(c.spentC)}</div></div>
+      <div class="e final"><div class="ic" aria-hidden="true">💰</div><div class="tx"><b>My $$</b><span>${money(c.pointsC)} points + ${money(c.piggyC)} piggy</span></div><div class="v">${money(c.moneyC)}</div></div>
+    </div>
+    <div class="card"><h3>Piggy &amp; redeem history</h3>${items.slice(0,12).map(e => histRow(e,false)).join('')}</div>
+    ${syncChip()}</div>`;
+}
+
+/* ---------- render ---------- */
+/* ---------- admin tools ---------- */
+function loadImg(file){
+  return new Promise((res, rej) => { const u = URL.createObjectURL(file), im = new Image(); im.onload = () => { URL.revokeObjectURL(u); res(im); }; im.onerror = () => rej(new Error('bad image')); im.src = u; });
+}
+function drawCover(im, w, h2, fx, fy){
+  const c = document.createElement('canvas'); c.width = w; c.height = h2; const x = c.getContext('2d');
+  const s = Math.max(w / im.width, h2 / im.height), dw = im.width * s, dh = im.height * s;
+  x.fillStyle = '#fff'; x.fillRect(0, 0, w, h2); x.drawImage(im, (w - dw) * fx, (h2 - dh) * fy, dw, dh); return c;
+}
+function sketchCanvas(src){
+  const w = src.width, h2 = src.height;
+  if (!('filter' in document.createElement('canvas').getContext('2d'))) return src;      // some browsers can't: keep the photo
+  const mk = f => { const c = document.createElement('canvas'); c.width = w; c.height = h2; const x = c.getContext('2d'); x.filter = f; x.drawImage(src, 0, 0); x.filter = 'none'; return c; };
+  const gray = mk('grayscale(1) contrast(1.1)'), inv = mk('grayscale(1) invert(1) blur(' + Math.max(3, Math.round(w / 70)) + 'px)');
+  const out = document.createElement('canvas'); out.width = w; out.height = h2; const o = out.getContext('2d');
+  o.drawImage(gray, 0, 0); o.globalCompositeOperation = 'color-dodge'; o.drawImage(inv, 0, 0);
+  o.globalCompositeOperation = 'multiply'; o.fillStyle = '#FFFBF0'; o.fillRect(0, 0, w, h2); return out;
+}
+const origImgs = {};
+const clampN = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+function cropPics(im, a, sketch){
+  const W = im.width, H = im.height;
+  let cw = Math.min(W, H * 0.8) / a.z, ch = cw / 0.8;
+  const fx = W * a.x / 100, fy = H * a.y / 100;                       // the face the admin pointed at
+  const sx = clampN(fx - cw / 2, 0, W - cw), sy = clampN(fy - ch * 0.32, 0, H - ch);
+  let full = document.createElement('canvas'); full.width = 560; full.height = 700;
+  let x = full.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, 560, 700); x.drawImage(im, sx, sy, cw, ch, 0, 0, 560, 700);
+  const side = cw * 0.55, fsx = clampN(fx - side / 2, 0, W - side), fsy = clampN(fy - side / 2, 0, H - side);
+  let face = document.createElement('canvas'); face.width = 240; face.height = 240;
+  x = face.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, 240, 240); x.drawImage(im, fsx, fsy, side, side, 0, 0, 240, 240);
+  if (sketch){ full = sketchCanvas(full); face = sketchCanvas(face); }
+  return {full: full.toDataURL('image/jpeg', 0.82), face: face.toDataURL('image/jpeg', 0.84)};
+}
+let adjTimer = null;
+function adjustPic(u){
+  clearTimeout(adjTimer);
+  adjTimer = setTimeout(() => {
+    if (!origImgs[u]) return;
+    ui.pend[u] = cropPics(origImgs[u], ui.adj[u], ui.sketch);
+    const img = document.querySelector('#admav_' + u); if (img) img.src = ui.pend[u].face;
+  }, 90);
+}
+function downloadText(name, text, mime, bom){
+  try {
+    const b = new Blob([(bom ? '\ufeff' : '') + text], {type: mime + ';charset=utf-8'}), a = document.createElement('a');
+    a.href = URL.createObjectURL(b); a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 800);
+  } catch(e){ toast('Downloading did not work in this browser.'); }
+}
+const csvCell = v => { const s = String(v == null ? '' : v); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+const csvRow = a => a.map(csvCell).join(',');
+function csvPoints(){
+  const c = compute(events), rows = [csvRow(['Group', 'Activity', NAMES.bapu + ' points', NAMES.mumma + ' points', 'Total points', 'Value ($)'])];
+  GROUPS.forEach(g => g.acts.forEach(a => { const t = c.tot[a[0]], s = t.b + t.m; rows.push(csvRow([g.name, a[1], t.b, t.m, s, (s * RATE_C / 100).toFixed(2)])); }));
+  rows.push('', csvRow(['Summary']));
+  [['Value of 1 point ($)', (RATE_C / 100).toFixed(4)], ['Total points', c.totalPts], ['Redeemed points', c.redeemPts], ['Balance points', c.balPts],
+   ['Balance points value ($)', (c.pointsC / 100).toFixed(2)], ['Piggy money in ($)', (c.piggyInC / 100).toFixed(2)], ['Piggy spent ($)', (c.spentC / 100).toFixed(2)],
+   ['Piggy balance ($)', (c.piggyC / 100).toFixed(2)], ['Total $$ (points + piggy)', (c.moneyC / 100).toFixed(2)]].forEach(r => rows.push(csvRow(r)));
+  return rows.join('\r\n');
+}
+function csvHistory(){
+  const rows = [csvRow(['Date', 'What', 'By', 'Activity', 'Points', 'Amount ($)', 'Note'])];
+  events.forEach(e => {
+    const d = new Date(e.ts).toISOString().slice(0, 16).replace('T', ' ');
+    if (e.type === 'award') rows.push(csvRow([d, e.pts < 0 ? 'Points taken away' : 'Points given', WHO[e.who], ACTS[e.act].name, e.pts, (e.pts * RATE_C / 100).toFixed(2), e.note]));
+    else if (e.type === 'adjust') rows.push(csvRow([d, 'Points edited', WHO[e.who], ACTS[e.act].name, e.delta, (e.delta * RATE_C / 100).toFixed(2), e.note]));
+    else if (e.type === 'redeem') rows.push(csvRow([d, 'Points redeemed', '', '', -e.pts, (-e.pts * RATE_C / 100).toFixed(2), e.note]));
+    else if (e.type === 'expense') rows.push(csvRow([d, 'Piggy spending', '', '', '', (-e.cents / 100).toFixed(2), e.note]));
+    else if (e.type === 'deposit') rows.push(csvRow([d, 'Added to piggy', '', '', '', (e.cents / 100).toFixed(2), e.note]));
+  });
+  return rows.join('\r\n');
+}
+const APP_KEYS = ['ridhaan-star-config-v1', 'ridhaan-star-log-v2', 'ridhaan-star-pins-v2', 'ridhaan-star-settings-v2', 'ridhaan-star-profiles-v1', 'ridhaan-star-admin-v1', 'ridhaan-star-log-v1', 'ridhaan-star-pins-v1'];
+
+function famCard(){
+  const gv = (k, d) => ui[k] !== undefined ? ui[k] : d;
+  return `<div class="card"><h3>👨‍👩‍👧 Family settings</h3>
+    <p class="mut">Greeting nickname, the number on the sports car, and the piggy bank.</p>
+    <div class="lbl">Greeting nickname (used in “Welcome …!” and the voice)</div><input class="field" type="text" maxlength="24" aria-label="Greeting nickname" data-bind="fam_nick" value="${esc(gv('fam_nick', cfg.nick))}">
+    <div class="lbl">Number on the sports car</div><input class="field" style="max-width:120px" type="text" maxlength="2" aria-label="Car number" data-bind="fam_car" value="${esc(gv('fam_car', cfg.carNo))}">
+    <div class="two"><div><div class="lbl">Piggy money at start ($)</div><input class="field" type="number" min="0" step="0.01" aria-label="Piggy money at the start" data-bind="fam_piggy" value="${esc(gv('fam_piggy', (cfg.piggyC / 100).toFixed(2)))}"></div>
+      <div><div class="lbl">Already spent ($)</div><input class="field" type="number" min="0" step="0.01" aria-label="Piggy money already spent" data-bind="fam_spent" value="${esc(gv('fam_spent', (cfg.expenseC / 100).toFixed(2)))}"></div></div>
+    <div class="lbl">Your PIN</div>${pinIn('pinFam', 'Your master PIN')}
+    <div style="margin-top:14px"><button class="btn blue" id="famBtn" data-a="famSave">Save family settings</button></div></div>`;
+}
+function actCard(){
+  const gs = GROUPS.map(g => `<div class="lbl" style="margin-top:14px"><input class="field" type="text" maxlength="24" aria-label="Group name" data-bind="gn_${g.id}" value="${esc(ui['gn_' + g.id] !== undefined ? ui['gn_' + g.id] : g.name)}"></div>` +
+    g.acts.map(a => { const custom = (cfg.extra || []).some(x => x.id === a[0]);
+      return `<div class="help" style="padding:6px 0;gap:8px;justify-content:flex-start"><span style="font-size:22px" aria-hidden="true">${a[2]}</span><input class="field" style="flex:1;min-width:0" type="text" maxlength="30" aria-label="Activity name" data-bind="an_${a[0]}" value="${esc(ui['an_' + a[0]] !== undefined ? ui['an_' + a[0]] : a[1])}">${custom ? `<button class="iconbtn" data-a="actRm" data-id="${a[0]}">Remove</button>` : ''}</div>`; }).join('')).join('');
+  return `<div class="card"><h3>📋 Activities</h3><p class="mut">Rename the groups and activities, or add your own. Points already given stay with their activity.</p>${gs}
+    <div class="lbl">Add an activity</div>
+    <select class="field" data-bind="newActG" aria-label="Group for the new activity">${GROUPS.map(g => `<option value="${g.id}" ${(ui.newActG || GROUPS[0].id) === g.id ? 'selected' : ''}>${esc(g.name)}</option>`).join('')}</select>
+    <div class="two" style="margin-top:8px"><input class="field" type="text" maxlength="30" placeholder="Activity name" aria-label="New activity name" data-bind="newActN" value="${esc(ui.newActN)}"><input class="field" type="text" maxlength="2" placeholder="Emoji" aria-label="Emoji" data-bind="newActE" value="${esc(ui.newActE)}"></div>
+    <div class="lbl">Your PIN</div>${pinIn('pinAct', 'Your master PIN')}
+    <div class="two" style="margin-top:14px"><button class="btn pur" id="actAdd" data-a="actAdd">Add activity</button><button class="btn blue" id="actBtn" data-a="actSave">Save names</button></div></div>`;
+}
+function newFamilyCard(){
+  return `<div class="card warn"><h3>👶 Set up for another child &amp; parents</h3>
+    <p class="mut">Starts a brand-new setup for a different child and parents. It clears all points, history, PINs, names, pictures, the built-in portraits and extra admins, then opens the setup screen. Download a backup first if you want to keep this family's data.</p>
+    <div class="lbl">Type NEW</div><input class="field" style="max-width:200px" type="text" autocomplete="off" aria-label="Type NEW to confirm" data-bind="newWord" value="${esc(ui.newWord)}">
+    <div class="lbl">Your PIN</div>${pinIn('pinNew', 'Your master PIN')}
+    <div style="margin-top:14px"><button class="btn danger" id="nfBtn" data-a="newFamily">Start setup for a new family</button></div></div>`;
+}
+function msgCard(){
+  const rows = [['kidFirst', NAMES.ridhaan + ': first login (also spoken aloud)'], ['kid', NAMES.ridhaan + ': every other login'], ['mumma', NAMES.mumma + ': login'], ['bapu', NAMES.bapu + ': login'], ['other', 'Other admins: login']];
+  return `<div class="card"><h3>💬 Welcome messages</h3>
+    <p class="mut">What each person sees when they log in. You can use <b>{name}</b> (who logged in), <b>{child}</b>, <b>{nick}</b> (greeting nickname), <b>{parent1}</b> and <b>{parent2}</b>.</p>
+    ${rows.map(([k, l]) => `<div class="lbl">${esc(l)}</div><input class="field" type="text" maxlength="120" aria-label="${esc(l)}" data-bind="ms_${k}" value="${esc(ui['ms_' + k] !== undefined ? ui['ms_' + k] : ((cfg.msgs && cfg.msgs[k]) || MSG_DEFAULTS[k]))}"><div class="preview" id="mp_${k}"></div>`).join('')}
+    <div class="lbl">Your PIN</div>${pinIn('pinMsg', 'Your PIN to save welcome messages')}
+    <div class="two" style="margin-top:14px"><button class="btn blue" id="msBtn" data-a="msgSave">Save messages</button><button class="btn ghost" style="width:100%" data-a="msgReset">Back to the originals</button></div></div>`;
+}
+function pageAdmin(c){
+  if (!isAdmin()) return parentsOnly('science', 'Admin', 'Admin tools');
+  const master = isMaster(), users = allUsers();
+  const rows = users.map(u => {
+    const pend = ui.pend[u], shown = pend === undefined ? picFace(u) : (pend ? pend.face : defaultFace(u));
+    const nmv = ui['nm_' + u] !== undefined ? ui['nm_' + u] : NAMES[u];
+    const avh = shown ? `<img class="face" id="admav_${u}" alt="" src="${shown}">` : `<span class="face initial" style="--c:${avColor(u)}">${esc((nmv || '?').trim().charAt(0).toUpperCase())}</span>`;
+    const showOrig = pend ? true : (pend === undefined && !!prof.pics[u]);
+    return `<div class="adm-row"><div class="adm-av">${avh}</div><div class="adm-f">
+      <input class="field" type="text" maxlength="24" aria-label="Name of ${esc(NAMES[u])}" data-bind="nm_${u}" value="${esc(nmv)}">
+      <div class="adm-b"><input class="vh" type="file" accept="image/*" id="file_${u}" data-file="${u}"><label class="iconbtn" for="file_${u}">📷 Change picture</label>${showOrig ? `<button class="iconbtn" data-a="picReset" data-u="${u}">↩ Original</button>` : ''}</div>
+      ${origImgs[u] && ui.adj[u] && pend ? `<div class="adj"><label>Zoom<input type="range" min="1" max="3" step="0.05" data-adj="${u}.z" value="${ui.adj[u].z}" aria-label="Zoom"></label><label>Face left / right<input type="range" min="0" max="100" step="1" data-adj="${u}.x" value="${ui.adj[u].x}" aria-label="Face left or right"></label><label>Face up / down<input type="range" min="0" max="100" step="1" data-adj="${u}.y" value="${ui.adj[u].y}" aria-label="Face up or down"></label></div>` : ''}</div></div>`;
+  }).join('');
+  const helpers = (admin.helpers || []).map(hp => `<div class="help"><span><b>${esc(hp.name)}</b><br><span class="mut" style="font-size:14px">${pins[hp.id] ? 'PIN is set' : 'Has not set a PIN yet'}</span></span>
+    <span class="adm-b" style="margin:0"><button class="iconbtn" data-a="resetPin" data-u="${hp.id}">Reset PIN</button><button class="iconbtn" data-a="rmHelper" data-id="${hp.id}">Remove</button></span></div>`).join('');
+  return scene('science') + `<div class="head"><h2>Admin ⚙️</h2><p>${master ? 'You are the master admin.' : 'You have shared admin access.'} Changes need your PIN.</p></div>
+  <div class="wrap">
+    <div class="card"><h3>🧑‍🤝‍🧑 Names &amp; pictures</h3>
+      <p class="mut">Change what each account is called and its picture.</p>${rows}
+      <label class="chk"><input type="checkbox" data-a="sketchToggle" ${ui.sketch ? 'checked' : ''}> Turn new photos into pencil sketches</label>
+      <div class="lbl">Your PIN</div>${pinIn('pinProf', 'Your PIN to save names and pictures')}
+      <div style="margin-top:14px"><button class="btn blue" id="profBtn" data-a="profSave">Save names &amp; pictures</button></div></div>
+    ${master ? `<div class="card"><h3>🔑 Admin access</h3>
+      <p class="mut">Share admin access (names, pictures, backup) with others. Only you can reset to factory settings or change who is an admin.</p>
+      <div class="lbl">Your PIN</div>${pinIn('pinAcc', 'Your master PIN')}
+      <label class="chk" style="margin-top:6px"><input type="checkbox" data-a="toggleMumma" ${admin.partner ? 'checked' : ''}> ${esc(NAMES[partnerId()])} can use admin tools</label>
+      <div class="lbl">Add another admin</div>
+      <div class="two"><input class="field" type="text" maxlength="24" placeholder="Name" aria-label="Name of the new admin" data-bind="newHelper" value="${esc(ui.newHelper)}"><button class="btn pur" id="accAdd" data-a="addHelper">Add admin</button></div>
+      <p class="mut" style="font-size:14px;margin-top:6px">They set their own PIN the first time they log in.</p>
+      <div style="margin-top:8px">${helpers || '<p class="empty">No extra admins yet.</p>'}</div>
+      <div class="lbl">Forgot a PIN?</div><button class="btn ghost" data-a="resetPin" data-u="${partnerId()}">Reset ${esc(NAMES[partnerId()])}'s PIN</button></div>` : ''}
+    ${msgCard()}
+    ${master ? famCard() + actCard() : ''}
+    <div class="card"><h3>💾 Backup &amp; Excel</h3>
+      <p class="mut">Everything is stored on this device. Download a backup to keep it safe or move it to another device.</p>
+      <div class="adm-b" style="margin-top:0"><button class="btn ghost" data-a="dlBackup">⬇ Backup (.json)</button><button class="btn ghost" data-a="dlPoints">⬇ Points (Excel)</button><button class="btn ghost" data-a="dlHistory">⬇ History (Excel)</button></div>
+      <div class="lbl">Restore a backup</div>
+      <input class="vh" type="file" accept=".json,application/json" id="file_restore" data-restore="1"><label class="iconbtn" for="file_restore">📂 Choose backup file</label>
+      <div class="preview" id="bkInfo"></div>
+      ${pinIn('pinBk', 'Your PIN to restore a backup')}
+      <div style="margin-top:12px"><button class="btn ghost" id="bkGo" data-a="restoreGo">Restore this backup</button></div></div>
+    ${master ? syncCard() : ''}
+    ${master ? newFamilyCard() : ''}
+    ${master ? `<div class="card warn"><h3>⚠️ Factory reset</h3>
+      <p class="mut">Erases all points, history, piggy changes, PINs, names, pictures and extra admins, and sets the point value back to 1¢. Everyone sets a new PIN afterwards. This cannot be undone, so download a backup first.</p>
+      <div class="lbl">Type RESET</div><input class="field" style="max-width:200px" type="text" autocomplete="off" aria-label="Type RESET to confirm" data-bind="frWord" value="${esc(ui.frWord)}">
+      <div class="lbl">Your PIN</div>${pinIn('pinFr', 'Your master PIN')}
+      <div style="margin-top:14px"><button class="btn danger" id="frBtn" data-a="factoryReset">Reset everything</button></div></div>` : ''}
+    ${syncChip()}</div>`;
+}
+
+/* ---------- online sync: your own free Firebase Realtime Database, used through its plain web (REST) address ---------- */
+const syncStore = {
+  key: 'star-sync-v1',
+  read(){ try { return JSON.parse(localStorage.getItem(this.key)) || {}; } catch(e){ return {}; } },
+  write(o){ try { localStorage.setItem(this.key, JSON.stringify(o)); } catch(e){} }
+};
+const _sy = syncStore.read();
+const sync = {url:_sy.url || '', code:_sy.code || '', on:SYNC_ENABLED && !!_sy.on, client:_sy.client || Math.random().toString(36).slice(2, 8),
+  outbox:_sy.outbox || [], lastMeta:_sy.lastMeta || {}, knownEv:_sy.knownEv || {}, knownPins:_sy.knownPins || {},
+  status:(SYNC_ENABLED && _sy.on) ? 'connecting' : 'off', msg:'', busy:false, pulling:false, applying:false, pollMs:5000, timer:null};
+function saveSync(){ syncStore.write({url:sync.url, code:sync.code, on:sync.on, client:sync.client, outbox:sync.outbox, lastMeta:sync.lastMeta, knownEv:sync.knownEv, knownPins:sync.knownPins}); }
+const SYNC_SECTIONS = ['events', 'pins', 'prof', 'admin', 'cfg', 'settings'];
+const SYNC_KEYS = {'ridhaan-star-profiles-v1':'prof', 'ridhaan-star-admin-v1':'admin', 'ridhaan-star-config-v1':'cfg', 'ridhaan-star-settings-v2':'settings'};
+const syncPath = s => ({events:'/events', pins:'/pins', prof:'/doc/prof', admin:'/doc/admin', cfg:'/doc/cfg', settings:'/doc/settings'})[s];
+function syncText(){
+  if (!SYNC_ENABLED) return '📱 Saved on this device only.';
+  if (!sync.on) return '📱 Saved on this device only. Online sync is off.';
+  const n = (sync.outbox[0] ? Object.keys(sync.outbox[0]).filter(k => !k.startsWith('meta/')).length : 0), pend = n ? ' (' + n + ' change' + (n > 1 ? 's' : '') + ' waiting)' : '';
+  if (sync.status === 'offline') return '📴 Offline. Your changes are kept here and upload when you are back online.' + pend;
+  if (sync.status === 'error') return '⚠️ Sync problem: ' + sync.msg + pend;
+  if (sync.status === 'connecting') return '🌐 Connecting…';
+  return '🌐 Online sync is on: all connected devices share these points.' + pend;
+}
+function setStatus(s, m){ sync.status = s; sync.msg = m || ''; document.querySelectorAll('[data-sync]').forEach(el => { el.textContent = syncText(); }); }
+function errInfo(e){
+  if (e && (e.http === 401 || e.http === 403)) return {s:'error', m:'The database refused access. Check the database rules (see ONLINE_SETUP.txt).'};
+  if (e && e.http === 404) return {s:'error', m:'Database not found. Check the address.'};
+  if (e && e.http) return {s:'error', m:'The database answered with an error (' + e.http + ').'};
+  return {s:'offline', m:'Cannot reach the database right now.'};
+}
+const failStatus = e => { const i = errInfo(e); setStatus(i.s, i.m); };
+async function cloudReq(method, path, body){
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 10000);
+  try {
+    const r = await fetch(sync.url + '/families/' + sync.code + path + '.json', {method, body: body === undefined ? undefined : JSON.stringify(body), signal: ctl.signal, cache: 'no-store'});
+    if (!r.ok){ const e = new Error('http ' + r.status); e.http = r.status; throw e; }
+    return await r.json();
+  } finally { clearTimeout(t); }
+}
+function othersMeta(meta, s){ const o = {}; Object.keys((meta && meta[s]) || {}).sort().forEach(c => { if (c !== sync.client) o[c] = meta[s][c]; }); return o; }
+const syncTok = () => Date.now().toString(36) + sync.client + Math.random().toString(36).slice(2, 5);
+function syncHook(key, data){
+  if (!SYNC_ENABLED || !sync.on || sync.applying) return;
+  try {
+    const op = {};
+    if (key === local.key){
+      const ids = {}; (data || []).forEach(e => { if (e && e.id) ids[e.id] = 1; });
+      (data || []).forEach(e => { if (e && e.id && !sync.knownEv[e.id]){ op['events/' + e.id] = e; sync.knownEv[e.id] = 1; } });
+      Object.keys(sync.knownEv).forEach(id => { if (!ids[id]){ op['events/' + id] = null; delete sync.knownEv[id]; } });
+      if (Object.keys(op).length) op['meta/events/' + sync.client] = syncTok();
+    } else if (key === pinStore.key){
+      const d = data || {};
+      Object.keys(d).forEach(u => { if (d[u] && d[u] !== sync.knownPins[u]){ op['pins/' + u] = d[u]; sync.knownPins[u] = d[u]; } });
+      Object.keys(sync.knownPins).forEach(u => { if (!d[u]){ op['pins/' + u] = null; delete sync.knownPins[u]; } });
+      if (Object.keys(op).length) op['meta/pins/' + sync.client] = syncTok();
+    } else if (SYNC_KEYS[key]){
+      op['doc/' + SYNC_KEYS[key]] = {v:data}; op['meta/' + SYNC_KEYS[key] + '/' + sync.client] = syncTok();
+    }
+    if (!Object.keys(op).length) return;
+    sync.outbox = [Object.assign({}, ...sync.outbox, op)];       // always one merged batch: latest value of each thing wins
+    saveSync(); setStatus(sync.status, sync.msg); syncFlush();
+  } catch(e){}
+}
+async function syncFlush(){
+  if (!SYNC_ENABLED || !sync.on || sync.busy || !sync.outbox.length) return;
+  sync.busy = true;
+  try {
+    const batch = sync.outbox[0];
+    await cloudReq('PATCH', '', batch);
+    if (sync.outbox[0] === batch) sync.outbox = []; else { const left = Object.assign({}, sync.outbox[0]); Object.keys(batch).forEach(k => { if (left[k] === batch[k]) delete left[k]; }); sync.outbox = Object.keys(left).length ? [left] : []; }
+    saveSync(); setStatus('ok', '');
+  } catch(e){ failStatus(e); }
+  finally { sync.busy = false; }
+  if (sync.outbox.length && sync.status === 'ok') syncFlush();
+}
+function reloadState(quiet){
+  pins = Object.assign({mumma:null, bapu:null, ridhaan:null}, pinStore.read());
+  prof = Object.assign({names:{}, pics:{}}, profStore.read());
+  const a = adminStore.read(); admin = Object.assign({partner:false, helpers:[]}, a); if (a.partner === undefined && a.mumma) admin.partner = true; delete admin.mumma;
+  cfg = Object.assign({}, CFG_DEFAULTS, cfgStore.read());
+  const s = setStore.read(); RATE_C = Number(s.rateC) > 0 ? Number(s.rateC) : 1;
+  applyProfiles(); rebuildActs();
+  if (session && (!pins[session.user] || (!KEY2[session.user] && !isHelper(session.user)))){ session = null; if (screen === 'app' || screen === 'welcome') screen = 'login'; }
+  if (!cfg.done && !session && screen !== 'connect') screen = 'setup'; else if (cfg.done && screen === 'setup') screen = 'login';
+  if (quiet) seenInit = false;
+  setEvents(local.read());
+}
+function applyRemote(got){
+  sync.applying = true;
+  try {
+    if ('events' in got){
+      const o = got.events || {}, list = Object.keys(o).map(id => Object.assign({}, o[id], {id}));
+      local.write(list); sync.knownEv = {}; list.forEach(e => { sync.knownEv[e.id] = 1; });
+    }
+    if ('pins' in got){ const o = got.pins || {}; pinStore.write(o); sync.knownPins = Object.assign({}, o); }
+    [['prof', profStore], ['admin', adminStore], ['cfg', cfgStore], ['settings', setStore]].forEach(([n, st]) => {
+      if (!(n in got)) return;
+      const d = got[n]; if (d && d.v) st.write(d.v); else { try { localStorage.removeItem(st.key); } catch(e){} }
+    });
+  } finally { sync.applying = false; }
+  reloadState(false);
+}
+async function syncPull(){
+  if (!SYNC_ENABLED || !sync.on || sync.pulling) return;
+  sync.pulling = true;
+  try {
+    if (sync.outbox.length){ await syncFlush(); if (sync.outbox.length) return; }
+    const meta = (await cloudReq('GET', '/meta')) || {};
+    const changed = SYNC_SECTIONS.filter(s => JSON.stringify(othersMeta(meta, s)) !== JSON.stringify(sync.lastMeta[s] || {}));
+    if (!changed.length){ setStatus('ok', ''); return; }
+    const got = {}; for (const s of changed) got[s] = await cloudReq('GET', syncPath(s));
+    if (sync.outbox.length) return;                 // you changed something while this was loading: try again next round
+    applyRemote(got); changed.forEach(s => { sync.lastMeta[s] = othersMeta(meta, s); }); saveSync(); setStatus('ok', '');
+  } catch(e){ failStatus(e); }
+  finally { sync.pulling = false; }
+}
+function snapshotAll(){
+  const ev = {}; local.read().forEach(e => { if (e && e.id) ev[e.id] = e; });
+  const snap = {events:ev, pins:pinStore.read(), doc:{}, meta:{}, v:1}, t = syncTok();
+  Object.keys(SYNC_KEYS).forEach(k => { const raw = localStorage.getItem(k); if (raw){ try { snap.doc[SYNC_KEYS[k]] = {v:JSON.parse(raw)}; } catch(e){} } });
+  SYNC_SECTIONS.forEach(s => { snap.meta[s] = {[sync.client]: t}; });
+  return snap;
+}
+async function syncPushAll(){
+  const snap = snapshotAll();
+  await cloudReq('PUT', '', snap);
+  sync.lastMeta = {}; sync.knownEv = {}; Object.keys(snap.events).forEach(i => { sync.knownEv[i] = 1; });
+  sync.knownPins = Object.assign({}, snap.pins); sync.outbox = []; saveSync(); setStatus('ok', '');
+}
+function normUrl(u){ return String(u || '').trim().replace(/\.json.*$/i, '').replace(/\/+$/, ''); }
+function newCode(){ const a = new Uint8Array(18); crypto.getRandomValues(a); return Array.from(a).map(b => 'abcdefghijkmnpqrstuvwxyz23456789'[b % 32]).join(''); }
+function parseLink(s){
+  try {
+    s = String(s || '').trim(); const i = s.indexOf('sync='); const b = i >= 0 ? s.slice(i + 5) : s;
+    const d = JSON.parse(atob(decodeURIComponent(b)));
+    return d && d.u && d.c ? d : null;
+  } catch(e){ return null; }
+}
+async function syncConnect(url, code){
+  url = normUrl(url); code = String(code || '').trim();
+  if (!(/^https:\/\//i.test(url) || /^http:\/\/(localhost|127\.0\.0\.1)/i.test(url))) throw {msg:'The database address should start with https://'};
+  if (!/^[A-Za-z0-9_-]{12,64}$/.test(code)) throw {msg:'The family code needs 12 or more letters or numbers.'};
+  const prev = {url:sync.url, code:sync.code, on:sync.on};
+  sync.url = url; sync.code = code; sync.on = true; sync.outbox = []; sync.lastMeta = {}; sync.knownEv = {}; sync.knownPins = {};
+  try {
+    const all = await cloudReq('GET', '');
+    if (all == null){ await syncPushAll(); }
+    else {
+      const byId = {}; Object.keys(all.events || {}).forEach(id => { byId[id] = Object.assign({}, all.events[id], {id}); });
+      const push = {}, cloudIds = Object.assign({}, byId);
+      local.read().forEach(e => { if (e && e.id && !byId[e.id]){ byId[e.id] = e; push['events/' + e.id] = e; } });
+      const mergedPins = Object.assign({}, pinStore.read(), all.pins || {});
+      Object.keys(mergedPins).forEach(u => { if (!(all.pins || {})[u]) push['pins/' + u] = mergedPins[u]; });
+      sync.applying = true;
+      try {
+        local.write(Object.values(byId)); pinStore.write(mergedPins);
+        [['prof', profStore], ['admin', adminStore], ['cfg', cfgStore], ['settings', setStore]].forEach(([n, st]) => {
+          const d = (all.doc || {})[n];
+          if (d && d.v) st.write(d.v);
+          else { const raw = localStorage.getItem(st.key); if (raw){ try { push['doc/' + n] = {v:JSON.parse(raw)}; } catch(e){} } }
+        });
+      } finally { sync.applying = false; }
+      if (Object.keys(push).length){
+        SYNC_SECTIONS.forEach(s => { if (Object.keys(push).some(k => k.startsWith(s === 'events' || s === 'pins' ? s + '/' : 'doc/' + s))) push['meta/' + s + '/' + sync.client] = syncTok(); });
+        await cloudReq('PATCH', '', push);
+      }
+      sync.lastMeta = {}; SYNC_SECTIONS.forEach(s => { sync.lastMeta[s] = othersMeta(all.meta || {}, s); });
+      sync.knownEv = {}; Object.keys(byId).forEach(i => { sync.knownEv[i] = 1; }); sync.knownPins = Object.assign({}, mergedPins);
+      saveSync(); reloadState(true);
+    }
+    saveSync(); setStatus('ok', ''); startPolling();
+  } catch(e){ sync.url = prev.url; sync.code = prev.code; sync.on = prev.on; saveSync(); throw e; }
+}
+function syncDisconnect(){ clearInterval(sync.timer); sync.on = false; sync.outbox = []; sync.lastMeta = {}; sync.knownEv = {}; sync.knownPins = {}; sync.status = 'off'; saveSync(); document.querySelectorAll('[data-sync]').forEach(el => { el.textContent = syncText(); }); }
+function startPolling(){ clearInterval(sync.timer); if (!SYNC_ENABLED || !sync.on) return; sync.timer = setInterval(syncPull, sync.pollMs); }
+const FIREBASE_RULES = '{\n  "rules": {\n    "families": {\n      "$family": {\n        ".read": true,\n        ".write": true\n      }\n    }\n  }\n}';
+function setupGuide(){
+  return `<details class="guide"><summary>🧭 First time? Set up your free online database (about 10 minutes)</summary><ol>
+    <li>Open <a href="https://console.firebase.google.com" target="_blank" rel="noopener">console.firebase.google.com</a>, sign in with a Google account and press <b>Create a project</b>. Any name is fine; you can switch Analytics off.</li>
+    <li>In the left menu choose <b>Build &gt; Realtime Database &gt; Create Database</b>. Pick a location, choose <b>locked mode</b> and press Enable.</li>
+    <li>Open the <b>Rules</b> tab, replace everything with the text below and press <b>Publish</b>.
+      <textarea readonly aria-label="Firebase rules to paste" onclick="this.select()">${esc(FIREBASE_RULES)}</textarea>
+      <button class="btn ghost" style="margin-top:6px" data-a="copyRules">📋 Copy the rules</button></li>
+    <li>On the <b>Data</b> tab copy the address shown at the top (it starts with https://) and paste it into the box below.</li>
+    <li>Leave the family code empty and press <b>Connect</b>. Later, in Admin &gt; Online sync, use <b>Show connection link</b> to connect the other devices.</li></ol></details>`;
+}
+function connectForm(){
+  return setupGuide() + `<div class="lbl">Connection link from another device</div><input class="field" type="text" aria-label="Connection link" data-bind="cn_link" value="${esc(ui.cn_link)}">
+    <div style="margin-top:8px"><button class="btn blue" data-a="cnLink">Connect with the link</button></div>
+    <div class="lbl">…or type the details</div>
+    <input class="field" type="url" placeholder="Database address (https://…)" aria-label="Database address" data-bind="cn_url" value="${esc(ui.cn_url)}">
+    <input class="field" style="margin-top:8px" type="text" placeholder="Family code (empty = new family)" aria-label="Family code" data-bind="cn_code" value="${esc(ui.cn_code)}" autocomplete="off">
+    <div class="err" role="alert" style="margin-top:6px">${esc(ui.cnErr)}</div>
+    <button class="btn pur" data-a="cnGo">Connect</button>`;
+}
+function viewConnect(){
+  return scene('login') + `<div class="head"><h2>🌐 Online sync</h2><p>Connect this device to your family's online database so every device shows the same points.</p></div>
+    <div class="wrap"><div class="card">${connectForm()}<div style="margin-top:12px"><button class="btn ghost" data-a="cnBack">Back</button></div></div>${syncChip()}</div>`;
+}
+function syncCard(){
+  if (!SYNC_ENABLED) return '';
+  if (!sync.on) return `<div class="card"><h3>🌐 Online sync</h3><p class="mut">Share points across all devices through your own free Firebase database (see ONLINE_SETUP.txt).</p>${connectForm()}</div>`;
+  return `<div class="card"><h3>🌐 Online sync</h3><p data-sync>${esc(syncText())}</p><p class="mut" style="font-size:14px">Database: ${esc(sync.url)}</p>
+    <div class="lbl">Your PIN</div>${pinIn('pinSync', 'Your master PIN')}
+    <div class="adm-b"><button class="btn ghost" data-a="syncLink">🔗 Show connection link</button><button class="btn ghost" data-a="syncNow">⟳ Sync now</button><button class="btn ghost" data-a="syncOff">Disconnect this device</button></div>
+    ${ui.syncLink ? `<div class="lbl">Open this link on your other devices</div><input class="field" readonly aria-label="Connection link" value="${esc(ui.syncLink)}" onclick="this.select()"><p class="mut" style="font-size:14px;margin-top:6px">Anyone with this link can read and change the family data, so share it only with family.</p>` : ''}</div>`;
+}
+if (SYNC_ENABLED){
+  window.addEventListener('online', () => syncPull());
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) syncPull(); });
+}
+async function doConnect(url, code){
+  ui.cn_url = url; ui.cn_code = ''; ui.cnErr = 'Connecting…'; render();
+  try { await syncConnect(url, code); ui.cn_link = ''; ui.cn_url = ''; ui.cn_code = ''; ui.cnErr = ''; if (screen === 'connect') screen = cfg.done ? 'login' : 'setup'; render(); toast('Online sync is on 🌐'); }
+  catch(e){ ui.cnErr = (e && e.msg) || errInfo(e).m || 'Could not connect.'; ui.cn_code = code; render(); }
+}
+function wipeAll(newFamily){
+  APP_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch(e){} });
+  events = []; seen = new Set(); seenInit = false; pins = {mumma:null, bapu:null, ridhaan:null};
+  prof = {names:{}, pics:{}}; admin = {partner:false, helpers:[]}; RATE_C = 1;
+  cfg = Object.assign({}, CFG_DEFAULTS, {gnames:{}, anames:{}, extra:[], msgs:{}}, newFamily ? {done:false, noDefault:true, nick:'', carNo:'1', piggyC:0, expenseC:0} : {});
+  if (newFamily) cfgStore.write(cfg);
+  Object.keys(origImgs).forEach(k => delete origImgs[k]);
+  applyProfiles(); rebuildActs();
+  session = null; screen = cfg.done ? 'login' : 'setup'; route = 'home'; didCount = false;
+  Object.keys(ui).filter(k => /^(fam_|gn_|an_|nm_|ms_)/.test(k)).forEach(k => delete ui[k]);
+  Object.assign(ui, {pinMsg:'', cn_link:'', cn_url:'', cn_code:'', cnErr:'', syncLink:'', pinSync:'', sign:1, su_child:'', su_nick:'', su_p1:'', su_p2:'', su_master:'bapu', su_rate:'1', su_piggy:'0', su_car:'1', pinFam:'', pinAct:'', pinNew:'', newWord:'', newActG:'', newActN:'', newActE:'',
+    adj:{}, pend:{}, sketch:true, pinProf:'', pinAcc:'', pinBk:'', pinFr:'', frWord:'', newHelper:'', restoreData:null, restoreName:'',
+    who:'', cat:'', act:'', amt:100, custom:'', note:'', rd:'', rdNote:'', sp:'', spNote:'', dp:'', dpNote:'', edAct:'', edNew:'', rateIn:'', pinAw:'', pinEd:'', pinRate:'', pinRd:'', pinKid:'', authErr:'', auth:null});
+}
+const PAGES = [
+  {id:'home', label:'Home', e:'🚀'}, {id:'log', label:'My Log', e:'🏎️'}, {id:'award', label:'Award', e:'🚲'},
+  {id:'prize', label:'Prizes', e:'🏆'}, {id:'piggy', label:'Piggy', e:'🐷'}
+];
+function render(){
+  document.title = NAMES.ridhaan + "'s Star Log";
+  const ae = document.activeElement;
+  const fkey = ae && ae.id ? '#' + ae.id : (ae && ae.dataset && ae.dataset.bind ? '[data-bind="' + ae.dataset.bind + '"]' : null);
+  const pv = ae && ae.id === 'pinIn' ? ae.value : null;
+  const c = compute(events), inApp = screen === 'app';
+  let html;
+  if (screen === 'connect') html = viewConnect();
+  else if (screen === 'setup') html = viewSetup();
+  else if (screen === 'login') html = viewLogin();
+  else if (screen === 'auth') html = viewAuth();
+  else if (screen === 'welcome') html = viewWelcome(c);
+  else html = topbar() + ({home:pageHome, log:pageLog, award:pageAward, prize:pagePrize, piggy:pagePiggy, admin:pageAdmin}[route])(c);
+  $('#page').innerHTML = html;
+  document.querySelector('nav').style.display = inApp ? '' : 'none';
+  $('#app').style.paddingBottom = inApp ? '104px' : '40px';
+  const pages = isParent() ? PAGES : PAGES.filter(p => ['home','log','piggy'].includes(p.id));
+  $('#tabs').style.gridTemplateColumns = 'repeat(' + pages.length + ',1fr)';
+  $('#tabs').innerHTML = inApp ? pages.map(p => `<button class="tab" data-a="go" data-v="${p.id}" ${route===p.id?'aria-current="page"':''}><span class="e" aria-hidden="true">${p.e}</span>${p.label}</button>`).join('') : '';
+  refresh();
+  if (fkey){ const n = document.querySelector(fkey); if (n){ n.focus(); if (pv !== null) n.value = pv; } }
+  else if (screen === 'auth'){ const n = $('#pinIn'); if (n) n.focus(); }
+  if (inApp && route === 'home' && !didCount){ didCount = true; countUp(); }
+}
+function refresh(){
+  const c = compute(events);
+  if (screen === 'app' && route === 'award' && isParent()){
+    const n = amtVal();
+    document.querySelectorAll('[data-amt]').forEach(b => b.classList.toggle('on', ui.custom === '' && Number(b.dataset.amt) === ui.amt));
+    const p = $('#awPrev'); if (p) p.innerHTML = n ? `<b>${n < 0 ? '−' : ''}${num(Math.abs(n))} points</b> = ${n < 0 ? '−' : ''}${money(Math.abs(n) * RATE_C)}` : 'Pick how many points.';
+    const b = $('#awBtn'); if (b){ b.disabled = !(ui.act && n && ui.pinAw.length >= 4); b.textContent = n < 0 ? 'Take away points ➖' : 'Give points ⭐'; b.classList.toggle('danger', n < 0); }
+    const t = ui.edAct ? c.tot[ui.edAct] : null, cur = $('#edCur');
+    if (cur) cur.innerHTML = t ? `Now: <b>${num(t[ui.edCol])}</b> points in ${WHO[ui.edCol]}'s column (${esc(WHO.m)} ${num(t.m)} + ${esc(WHO.b)} ${num(t.b)})` : 'Choose an activity.';
+    const eb = $('#edBtn'); if (eb) eb.disabled = !(t && ui.edNew !== '' && Number(ui.edNew) >= 0 && ui.pinEd.length >= 4);
+    const rv = Number(ui.rateIn), rp = $('#ratePrev');
+    if (rp) rp.innerHTML = rv > 0 ? `1 point = <b>${rv}¢</b> · ${num(c.balPts)} points would be worth <b>${money(Math.round(c.balPts * rv))}</b>` : 'Type how many cents one point is worth.';
+    const rb = $('#rateBtn'); if (rb) rb.disabled = !(rv > 0 && rv <= 10000 && ui.pinRate.length >= 4);
+    const kb = $('#kidBtn'); if (kb) kb.disabled = !(ui.pinKid.length >= 4);
+  }
+  if (screen === 'app' && route === 'prize' && isParent()){
+    const n = Math.floor(Number(ui.rd)) || 0;
+    $('#rdPrev').innerHTML = n ? `<b>${num(n)} points</b> = ${money(n*RATE_C)} · ${num(c.balPts - n)} points left` : 'Enter or pick the points to cash in.';
+    $('#rdBtn').disabled = !(n > 0 && n <= c.balPts && ui.pinRd.length >= 4);
+    if (n > c.balPts) $('#rdPrev').innerHTML = `Only <b>${num(c.balPts)} points</b> are available.`;
+    const sp = Math.round(Number(ui.sp) * 100) || 0;
+    $('#spPrev').innerHTML = sp ? (sp > c.piggyC ? `The piggy only has <b>${money(c.piggyC)}</b>.` : `Piggy will have <b>${money(c.piggyC - sp)}</b> left.`) : 'Enter the amount spent.';
+    $('#spBtn').disabled = !(sp > 0 && sp <= c.piggyC);
+    const dp = Math.round(Number(ui.dp) * 100) || 0;
+    $('#dpPrev').innerHTML = dp ? `Piggy will have <b>${money(c.piggyC + dp)}</b>.` : 'Enter the amount to add.';
+    $('#dpBtn').disabled = !(dp > 0);
+  }
+  if (screen === 'setup'){ const b = $('#suBtn'); if (b) b.disabled = !(ui.su_child.trim() && ui.su_p1.trim() && ui.su_p2.trim() && Number(ui.su_rate) > 0); }
+  if (screen === 'app' && route === 'admin' && isAdmin()){
+    const set = (id, off) => { const el = $(id); if (el) el.disabled = off; };
+    set('#profBtn', ui.pinProf.length < 4);
+    set('#accAdd', !(ui.newHelper.trim() && ui.pinAcc.length >= 4));
+    set('#bkGo', !(ui.restoreData && ui.pinBk.length >= 4));
+    set('#frBtn', !(ui.frWord === 'RESET' && ui.pinFr.length >= 4));
+    set('#msBtn', ui.pinMsg.length < 4);
+    [['kidFirst', 'ridhaan'], ['kid', 'ridhaan'], ['mumma', 'mumma'], ['bapu', 'bapu'], ['other', (admin.helpers[0] || {id:''}).id]].forEach(([k, u]) => {
+      const el = $('#mp_' + k); if (!el) return;
+      const t = ui['ms_' + k] !== undefined ? ui['ms_' + k] : ((cfg.msgs && cfg.msgs[k]) || MSG_DEFAULTS[k]);
+      el.textContent = 'Looks like: ' + fillMsg(t, NAMES[u] || 'Helper');
+    });
+    set('#nfBtn', !(ui.newWord === 'NEW' && ui.pinNew.length >= 4));
+    set('#famBtn', ui.pinFam.length < 4);
+    set('#actBtn', ui.pinAct.length < 4);
+    set('#actAdd', !(ui.newActN.trim() && ui.pinAct.length >= 4));
+    const bi = $('#bkInfo'); if (bi) bi.textContent = ui.restoreData ? 'Backup loaded: ' + ui.restoreName + '. Enter your PIN, then restore.' : 'No backup chosen yet.';
+  }
+  if (screen === 'welcome' && ui.wlStage === 'points'){
+    const n = Math.floor(Number(ui.wlPts)) || 0, needPin = session.user === 'ridhaan' || !ui.wlFresh;
+    const p = $('#wlPrev'), b = $('#wlBtn'), er = $('#wlErr');
+    if (p) p.innerHTML = !n ? 'Enter or pick the points to redeem.' : (n > c.balPts ? `Only <b>${num(c.balPts)} points</b> are available.` : `<b>${num(n)} points</b> = ${money(n*RATE_C)} · ${num(c.balPts - n)} points left`);
+    if (b) b.disabled = !(n > 0 && n <= c.balPts && (!needPin || ui.wlPin.length >= 4));
+    if (er) er.textContent = ui.wlErr;
+  }
+}
+function countUp(){
+  if (reduceMotion) return;
+  document.querySelectorAll('[data-count]').forEach(el => {
+    const end = Number(el.dataset.count), kind = el.dataset.kind, t0 = performance.now(), dur = 900;
+    const step = t => { const k = Math.min(1, (t - t0) / dur), v = Math.round(end * (1 - Math.pow(1 - k, 3)));
+      el.textContent = kind === 'm' ? money(v) : num(v); if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  });
+}
+
+/* ---------- sound (made in the browser, no files) ---------- */
+const fx = {
+  ctx: null,
+  muted: (() => { try { return localStorage.getItem('ridhaan-star-mute') === '1'; } catch(e){ return false; } })(),
+  ensure(){
+    try {
+      if (!this.ctx){ const C = window.AudioContext || window.webkitAudioContext; if (C) this.ctx = new C(); }
+      if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+    } catch(e){}
+    return this.ctx;
+  },
+  clap(){
+    if (this.muted) return;
+    const ctx = this.ensure(); if (!ctx) return;
+    try {
+      const t0 = ctx.currentTime + 0.05, dur = 2.6, N = 70, sr = ctx.sampleRate;
+      const buf = ctx.createBuffer(1, Math.floor(sr * 0.14), sr), d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++){ const k = i / d.length; d[i] = (Math.random() * 2 - 1) * Math.pow(1 - k, 3.2); }
+      const master = ctx.createGain(); master.gain.value = 0.9; master.connect(ctx.destination);
+      for (let i = 0; i < N; i++){
+        const x = Math.random(), t = t0 + x * dur, env = Math.sin(Math.PI * Math.min(1, x * 1.15)) * (1 - x * 0.5);
+        const src = ctx.createBufferSource(); src.buffer = buf; src.playbackRate.value = 0.8 + Math.random() * 0.6;
+        const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1200 + Math.random() * 1800; bp.Q.value = 0.9;
+        const g = ctx.createGain(); g.gain.value = (0.35 + Math.random() * 0.5) * env;
+        src.connect(bp); bp.connect(g); g.connect(master); src.start(t);
+      }
+    } catch(e){}
+  },
+  engine(t0, f0, f1, f2, dur, vol){
+    const ctx = this.ctx, tp = t0 + dur * 0.5, end = t0 + dur;
+    const master = ctx.createGain(); master.gain.value = 0.55; master.connect(ctx.destination);
+    const o1 = ctx.createOscillator(), o2 = ctx.createOscillator(), lp = ctx.createBiquadFilter(), g = ctx.createGain(), lfo = ctx.createOscillator(), lg = ctx.createGain();
+    o1.type = 'sawtooth'; o2.type = 'square';
+    [[o1, 1], [o2, 0.5]].forEach(([o, m]) => { o.frequency.setValueAtTime(f0 * m, t0); o.frequency.exponentialRampToValueAtTime(f1 * m, tp); o.frequency.exponentialRampToValueAtTime(f2 * m, end); });
+    lp.type = 'lowpass'; lp.Q.value = 3;
+    lp.frequency.setValueAtTime(f0 * 4, t0); lp.frequency.exponentialRampToValueAtTime(f1 * 7, tp); lp.frequency.exponentialRampToValueAtTime(f2 * 4, end);
+    g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0 + dur * 0.16); g.gain.setValueAtTime(vol, t0 + dur * 0.72); g.gain.exponentialRampToValueAtTime(0.0001, end);
+    lfo.frequency.value = 26; lg.gain.value = vol * 0.22; lfo.connect(lg); lg.connect(g.gain);
+    o1.connect(lp); o2.connect(lp); lp.connect(g); g.connect(master);
+    // breathy "wh" at the start
+    const nb = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.3), ctx.sampleRate), nd = nb.getChannelData(0);
+    for (let i = 0; i < nd.length; i++) nd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / nd.length, 2);
+    const ns = ctx.createBufferSource(); ns.buffer = nb; const nf = ctx.createBiquadFilter(); nf.type = 'bandpass'; nf.frequency.value = 900; nf.Q.value = 0.7;
+    const ng = ctx.createGain(); ng.gain.value = vol * 0.35; ns.connect(nf); nf.connect(ng); ng.connect(master);
+    o1.start(t0); o2.start(t0); lfo.start(t0); ns.start(t0); o1.stop(end + 0.05); o2.stop(end + 0.05); lfo.stop(end + 0.05);
+  },
+  rev(kind){
+    if (this.muted) return;
+    const ctx = this.ensure(); if (!ctx) return;
+    try {
+      const t = ctx.currentTime + 0.03;
+      if (kind === 'arrive') this.engine(t, 60, 300, 95, 1.7, 0.5);
+      else if (kind === 'leave') this.engine(t, 90, 520, 320, 1.9, 0.55);
+      else { this.engine(t, 70, 330, 100, 1.4, 0.55); this.engine(t + 1.65, 80, 280, 90, 0.95, 0.5); }
+    } catch(e){}
+  },
+  cycles: 0, timer: null,
+  say(txt){
+    if (this.muted || !('speechSynthesis' in window)) return;
+    try { const u = new SpeechSynthesisUtterance(txt); u.rate = 0.9; u.pitch = 1.4; u.volume = 1; window.speechSynthesis.cancel(); window.speechSynthesis.speak(u); } catch(e){}
+  },
+  toggle(){
+    this.muted = !this.muted;
+    try { localStorage.setItem('ridhaan-star-mute', this.muted ? '1' : '0'); } catch(e){}
+    if (this.muted){ try { window.speechSynthesis.cancel(); } catch(e){} }
+  }
+};
+/* the Ferrari on the login page: engine noise in step with the drive-in and drive-off */
+function driveCue(e){
+  if (e.animationName !== 'aDrive') return;
+  if (screen !== 'login' && screen !== 'auth') return;
+  const t = (e.elapsedTime || 0) % 12;
+  clearTimeout(fx.timer);
+  if (t > 6){ if (fx.cycles <= 2) fx.rev('leave'); return; }
+  if (fx.cycles >= 2) return;
+  fx.cycles++;
+  fx.rev('arrive');
+  fx.timer = setTimeout(() => { if (screen === 'login' || screen === 'auth') fx.rev('leave'); }, Math.max(0, (7.4 - t) * 1000));
+}
+document.addEventListener('animationstart', driveCue);
+document.addEventListener('animationiteration', driveCue);
+const MSG_DEFAULTS = {
+  kidFirst: 'Welcome {nick}! 🎉',
+  kid: "Yay, {name}! You're in 🎉",
+  mumma: "Welcoming {name} into {child}'s point world",
+  bapu: "Welcoming {name} into {child}'s point world",
+  other: "Welcoming {name} into {child}'s point world"
+};
+function fillMsg(t, name){
+  return String(t).replace(/\{name\}/g, name).replace(/\{child\}/g, NAMES.ridhaan).replace(/\{nick\}/g, cfg.nick || NAMES.ridhaan)
+    .replace(/\{parent1\}/g, NAMES.mumma).replace(/\{parent2\}/g, NAMES.bapu);
+}
+function msgFor(user, first){
+  const k = user === 'ridhaan' ? (first ? 'kidFirst' : 'kid') : (user === 'mumma' ? 'mumma' : user === 'bapu' ? 'bapu' : 'other');
+  return fillMsg((cfg.msgs && cfg.msgs[k]) || MSG_DEFAULTS[k], NAMES[user] || '');
+}
+const speakable = t => String(t).replace(/[^\p{L}\p{N}\s'’,.!?-]/gu, '').replace(/\s+/g, ' ').trim();
+function welcomeLadu(){ fx.clap(); setTimeout(() => fx.say(speakable(msgFor('ridhaan', true))), 500); }
+function confettiBurst(n){
+  if (reduceMotion) return;
+  const em = ['⭐','🎉','🎊','🎈','✨','🏆','🚀','🏎️'];
+  for (let i = 0; i < n; i++){
+    const s = document.createElement('span'); s.className = 'confetti'; s.textContent = em[i % em.length];
+    s.style.left = Math.random() * 100 + 'vw'; s.style.animationDelay = (Math.random() * .7) + 's'; s.style.fontSize = (18 + Math.random() * 18) + 'px';
+    document.body.appendChild(s); setTimeout(() => s.remove(), 3200);
+  }
+}
+(function(){
+  const el = $('#party'); if (!el) return;
+  const em = ['🎈','⭐','🎉','🎈','✨','🎊','🎈','⭐','🎉'];
+  el.innerHTML = em.map((e, i) => `<span style="left:${(i * 11 + 4) % 92}%;animation-duration:${16 + (i * 3) % 9}s;animation-delay:-${(i * 5) % 17}s;font-size:${22 + (i % 3) * 6}px">${e}</span>`).join('');
+})();
+document.addEventListener('pointerdown', () => fx.ensure(), {passive:true});
+
+/* ---------- toast & celebration ---------- */
+let toastT;
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 3600); }
+function celebrate(e){
+  if (e.pts < 0){ toast(`${WHO[e.who]} took away ${num(-e.pts)} points for ${ACTS[e.act].name}.`); return; }
+  toast(`${WHO[e.who]} gave you ${num(e.pts)} points for ${ACTS[e.act].name}! 🎉`);
+  if (reduceMotion) return;
+  const em = ['⭐','🎉','🚀','🏎️','🏆','✨'];
+  for (let i = 0; i < 22; i++){
+    const s = document.createElement('span'); s.className = 'confetti'; s.textContent = em[i % em.length];
+    s.style.left = Math.random() * 100 + 'vw'; s.style.animationDelay = (Math.random() * .6) + 's'; s.style.fontSize = (20 + Math.random() * 16) + 'px';
+    document.body.appendChild(s); setTimeout(() => s.remove(), 3000);
+  }
+}
+
+/* ---------- actions ---------- */
+function startWelcome(first){
+  ui.first = !!first; ui.wlStage = 'ask'; ui.wlFresh = true; ui.wlPts = ''; ui.wlPin = ''; ui.wlErr = ''; ui.authErr = ''; screen = 'welcome'; render(); window.scrollTo(0, 0);
+  confettiBurst(first ? 40 : 18);
+  if (first) welcomeLadu();
+}
+function enterApp(){ screen = 'app'; route = 'home'; didCount = false; render(); window.scrollTo(0, 0); confettiBurst(14); }
+const actions = {
+  go(el){ route = el.dataset.v; render(); window.scrollTo(0, 0); },
+  pick(el){
+    const u = el.dataset.v;
+    ui.auth = {mode:'login', user:u, step: pins[u] ? 'enter' : 'set1', tmp:''}; ui.authErr = ''; screen = 'auth'; render();
+  },
+  changePin(){ ui.auth = {mode:'change', user:session.user, step:'old', tmp:''}; ui.authErr = ''; screen = 'auth'; render(); },
+  authBack(){ screen = ui.auth.mode === 'change' ? 'app' : 'login'; ui.authErr = ''; render(); },
+  async authNext(){
+    const inp = $('#pinIn'), v = inp ? inp.value.trim() : '', a = ui.auth;
+    if (inp){ inp.value = ''; inp.blur(); }
+    const fail = msg => { ui.authErr = msg; render(); };
+    if (a.step === 'enter' || a.step === 'old'){
+      if (!pins[a.user]) return fail('No PIN is set yet.');
+      if (await hashPin(a.user, v) !== pins[a.user]) return fail('That PIN is not right. Try again.');
+      ui.authErr = '';
+      if (a.step === 'enter'){ session = {user:a.user}; startWelcome(); return; }
+      a.step = 'new'; render(); return;
+    }
+    if (a.step === 'set1' || a.step === 'new'){
+      if (!/^\d{4,6}$/.test(v)) return fail('Please use 4 to 6 numbers.');
+      a.tmp = v; a.step = a.step === 'set1' ? 'set2' : 'confirm'; ui.authErr = ''; render(); return;
+    }
+    if (v !== a.tmp){ a.step = a.mode === 'change' ? 'new' : 'set1'; a.tmp = ''; return fail('The two PINs did not match. Let us try again.'); }
+    try {
+      await savePin(a.user, await hashPin(a.user, v)); ui.authErr = '';
+      if (a.mode === 'login'){ session = {user:a.user}; startWelcome(a.user === 'ridhaan'); toast('PIN saved. Remember it! 🔐'); }
+      else { screen = 'app'; render(); toast('Your PIN was changed 🔐'); }
+    } catch(err){ a.step = a.mode === 'change' ? 'new' : 'set1'; a.tmp = ''; writeFailed(err); render(); }
+  },
+  logout(){ session = null; screen = 'login'; route = 'home'; ui.act = ''; ui.cat = ''; ui.note = ''; ui.custom = ''; ui.amt = 100; render(); window.scrollTo(0, 0); },
+  wlYes(){ ui.wlStage = 'points'; ui.wlErr = ''; render(); },
+  wlBack(){ ui.wlErr = ''; if (ui.wlFresh){ ui.wlStage = 'ask'; render(); } else { screen = 'app'; render(); } },
+  rev(){
+    const d = document.querySelector('.a-drive');
+    if (!d || reduceMotion){ fx.rev('tap'); return; }
+    // jump to the "drive away" part of the loop so the car zooms off with a vroom, then comes back
+    fx.cycles = 1; clearTimeout(fx.timer);
+    const els = [[d, 'aDrive'], ...Array.from(document.querySelectorAll('.a-wheel')).map(w => [w, 'aWheel'])];
+    els.forEach(([el, n]) => { el.style.animation = 'none'; });
+    void d.getBoundingClientRect();
+    els.forEach(([el, n]) => { el.style.animation = n + ' 12s -7.44s infinite'; });
+  },
+  goAdmin(){ if (!isAdmin()) return; route = 'admin'; render(); window.scrollTo(0, 0); },
+  sketchToggle(el){ ui.sketch = !!el.checked; },
+  picReset(el){ const u = el.dataset.u; ui.pend[u] = prof.pics[u] || ui.pend[u] ? null : undefined; if (ui.pend[u] === undefined) delete ui.pend[u]; delete origImgs[u]; delete ui.adj[u]; render(); },
+  async profSave(){
+    if (!isAdmin()) return;
+    if (!await myPinOk(ui.pinProf)){ toast('That PIN is not right.'); return; }
+    const users = allUsers();
+    users.forEach(u => {
+      const v = (ui['nm_' + u] !== undefined ? ui['nm_' + u] : NAMES[u]).trim().slice(0, 24);
+      if (!v) return;
+      if (isHelper(u)) admin.helpers.find(hp => hp.id === u).name = v; else prof.names[u] = v;
+    });
+    Object.keys(ui.pend).forEach(u => { if (ui.pend[u] === null) delete prof.pics[u]; else prof.pics[u] = ui.pend[u]; });
+    if (!profStore.write(prof) || !adminStore.write(admin)){ toast('This device is out of storage space, so the pictures did not save.'); return; }
+    applyProfiles(); ui.pend = {}; ui.adj = {}; Object.keys(origImgs).forEach(k => delete origImgs[k]); users.forEach(u => { delete ui['nm_' + u]; }); ui.pinProf = ''; render(); toast('Saved ✅');
+  },
+  async toggleMumma(el){
+    if (!isMaster()) return;
+    if (!await myPinOk(ui.pinAcc)){ el.checked = !!admin.partner; toast('Type your master PIN first.'); return; }
+    admin.partner = !!el.checked; adminStore.write(admin); ui.pinAcc = ''; render();
+    toast(admin.partner ? NAMES[partnerId()] + ' is now an admin.' : NAMES[partnerId()] + ' is no longer an admin.');
+  },
+  async addHelper(){
+    if (!isMaster()) return;
+    const nm = ui.newHelper.trim().slice(0, 24); if (!nm) return;
+    if ((admin.helpers || []).length >= 5){ toast('You can add up to 5 extra admins.'); return; }
+    if (!await myPinOk(ui.pinAcc)){ toast('That PIN is not right.'); return; }
+    const id = 'h' + uid(); admin.helpers.push({id, name:nm}); adminStore.write(admin); applyProfiles();
+    ui.newHelper = ''; ui.pinAcc = ''; render(); toast(nm + ' was added. They set their own PIN when they first log in.');
+  },
+  async rmHelper(el){
+    if (!isMaster()) return;
+    if (!await myPinOk(ui.pinAcc)){ toast('Type your master PIN first.'); return; }
+    const id = el.dataset.id, hp = admin.helpers.find(x => x.id === id); if (!hp) return;
+    admin.helpers = admin.helpers.filter(x => x.id !== id); adminStore.write(admin);
+    const o = pinStore.read(); delete o[id]; pinStore.write(o); delete pins[id]; delete prof.pics[id]; profStore.write(prof);
+    applyProfiles(); ui.pinAcc = ''; render(); toast(hp.name + ' was removed.');
+  },
+  async resetPin(el){
+    if (!isMaster()) return;
+    if (!await myPinOk(ui.pinAcc)){ toast('Type your master PIN first.'); return; }
+    const u = el.dataset.u, o = pinStore.read(); delete o[u]; pinStore.write(o); pins[u] = null; ui.pinAcc = ''; render();
+    toast(NAMES[u] + ' will choose a new PIN at the next login.');
+  },
+  dlBackup(){
+    const data = {app:'ridhaan-star-log', v:1, exported:new Date().toISOString(), events:local.read(), pins:pinStore.read(), settings:setStore.read(), profiles:prof, admin, config:cfg};
+    downloadText('star-log-backup-' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify(data), 'application/json', false);
+  },
+  dlPoints(){ downloadText('star-log-points.csv', csvPoints(), 'text/csv', true); },
+  dlHistory(){ downloadText('star-log-history.csv', csvHistory(), 'text/csv', true); },
+  async restoreGo(){
+    if (!isAdmin() || !ui.restoreData) return;
+    if (!await myPinOk(ui.pinBk)){ toast('That PIN is not right.'); return; }
+    const d = ui.restoreData;
+    sync.applying = true;
+    try {
+      local.write(Array.isArray(d.events) ? d.events : []); pinStore.write(d.pins || {}); setStore.write(d.settings || {});
+      profStore.write(d.profiles || {}); adminStore.write(d.admin || {}); cfgStore.write(d.config || {});
+    } catch(e){ sync.applying = false; toast('That backup could not be restored.'); return; }
+    sync.applying = false;
+    if (SYNC_ENABLED && sync.on){ try { await syncPushAll(); } catch(e){} }
+    toast('Backup restored. Reloading…'); setTimeout(() => location.reload(), 700);
+  },
+  async factoryReset(){
+    if (!isMaster() || ui.frWord !== 'RESET') return;
+    if (!await myPinOk(ui.pinFr)){ toast('That PIN is not right.'); return; }
+    wipeAll(false); render(); window.scrollTo(0, 0); toast('Everything is back to factory settings. Everyone sets a new PIN.');
+    if (SYNC_ENABLED && sync.on) syncPushAll().catch(failStatus);
+  },
+  async newFamily(){
+    if (!isMaster() || ui.newWord !== 'NEW') return;
+    if (!await myPinOk(ui.pinNew)){ toast('That PIN is not right.'); return; }
+    if (SYNC_ENABLED && sync.on) syncDisconnect();
+    wipeAll(true); render(); window.scrollTo(0, 0); toast('Ready for a new family. Fill in the setup.');
+  },
+  sign(el){ ui.sign = Number(el.dataset.v) < 0 ? -1 : 1; render(); },
+  suMaster(el){ ui.su_master = el.dataset.v === 'mumma' ? 'mumma' : 'bapu'; render(); },
+  async suDone(){
+    const ch = ui.su_child.trim().slice(0, 24), p1 = ui.su_p1.trim().slice(0, 24), p2 = ui.su_p2.trim().slice(0, 24), rate = Math.round(Number(ui.su_rate) * 100) / 100;
+    if (!(ch && p1 && p2 && rate > 0 && rate <= 10000)) return;
+    prof.names = {ridhaan:ch, mumma:p1, bapu:p2};
+    cfg.nick = ui.su_nick.trim().slice(0, 24); cfg.carNo = (ui.su_car.trim() || '1').slice(0, 2);
+    cfg.piggyC = Math.max(0, Math.round(Number(ui.su_piggy || 0) * 100)) || 0; cfg.expenseC = 0;
+    cfg.master = ui.su_master === 'mumma' ? 'mumma' : 'bapu'; cfg.done = true;
+    profStore.write(prof); cfgStore.write(cfg); await saveRate(rate); applyProfiles();
+    screen = 'login'; render(); window.scrollTo(0, 0); confettiBurst(36); toast('All set! Everyone can now choose a PIN. 🎉');
+  },
+  async famSave(){
+    if (!isMaster()) return;
+    if (!await myPinOk(ui.pinFam)){ toast('That PIN is not right.'); return; }
+    const gv = (k, d) => ui[k] !== undefined ? ui[k] : d;
+    const piggy = Math.max(0, Math.round(Number(gv('fam_piggy', cfg.piggyC / 100)) * 100)) || 0, spent = Math.max(0, Math.round(Number(gv('fam_spent', cfg.expenseC / 100)) * 100)) || 0;
+    const old = {p:cfg.piggyC, s:cfg.expenseC}; cfg.piggyC = piggy; cfg.expenseC = spent;
+    if (compute(events).piggyC < 0){ cfg.piggyC = old.p; cfg.expenseC = old.s; toast('That would leave the piggy below $0 with what has already been spent.'); return; }
+    cfg.nick = String(gv('fam_nick', cfg.nick)).trim().slice(0, 24); cfg.carNo = (String(gv('fam_car', cfg.carNo)).trim() || '1').slice(0, 2);
+    cfgStore.write(cfg); ['fam_nick', 'fam_car', 'fam_piggy', 'fam_spent'].forEach(k => delete ui[k]); ui.pinFam = ''; render(); toast('Family settings saved ✅');
+  },
+  async actSave(){
+    if (!isMaster()) return;
+    if (!await myPinOk(ui.pinAct)){ toast('That PIN is not right.'); return; }
+    const base = {}; GROUPS_BASE.forEach(g => { base['g:' + g.id] = g.name; g.acts.forEach(a => { base[a[0]] = a[1]; }); });
+    GROUPS.forEach(g => {
+      const gv = (ui['gn_' + g.id] !== undefined ? ui['gn_' + g.id] : g.name).trim().slice(0, 24);
+      if (gv){ if (gv === base['g:' + g.id]) delete cfg.gnames[g.id]; else cfg.gnames[g.id] = gv; }
+      g.acts.forEach(a => {
+        const v = (ui['an_' + a[0]] !== undefined ? ui['an_' + a[0]] : a[1]).trim().slice(0, 30); if (!v) return;
+        const ex = (cfg.extra || []).find(x => x.id === a[0]);
+        if (ex) ex.name = v; else if (v === base[a[0]]) delete cfg.anames[a[0]]; else cfg.anames[a[0]] = v;
+      });
+    });
+    Object.keys(ui).filter(k => /^(gn_|an_)/.test(k)).forEach(k => delete ui[k]);
+    cfgStore.write(cfg); rebuildActs(); ui.pinAct = ''; render(); toast('Activity names saved ✅');
+  },
+  async actAdd(){
+    if (!isMaster()) return;
+    const nm = ui.newActN.trim().slice(0, 30); if (!nm) return;
+    if ((cfg.extra || []).length >= 30){ toast('That is plenty of extra activities already.'); return; }
+    if (!await myPinOk(ui.pinAct)){ toast('That PIN is not right.'); return; }
+    const g = ui.newActG || GROUPS[0].id;
+    cfg.extra.push({id:'c' + uid(), g, name:nm, e:(ui.newActE.trim() || '⭐').slice(0, 2)});
+    cfgStore.write(cfg); rebuildActs(); ui.newActN = ''; ui.newActE = ''; ui.pinAct = ''; render(); toast(nm + ' was added ✅');
+  },
+  async actRm(el){
+    if (!isMaster()) return;
+    if (!await myPinOk(ui.pinAct)){ toast('Type your master PIN in the Activities box first.'); return; }
+    const id = el.dataset.id;
+    if (events.some(e => e.act === id)){ toast('That activity already has points, so it can only be renamed.'); return; }
+    cfg.extra = cfg.extra.filter(x => x.id !== id); delete cfg.anames[id]; cfgStore.write(cfg); rebuildActs(); ui.pinAct = ''; render(); toast('Activity removed.');
+  },
+  async copyRules(){ try { await navigator.clipboard.writeText(FIREBASE_RULES); toast('Rules copied ✅'); } catch(e){ toast('Select the text in the box and copy it.'); } },
+  goConnect(){ ui.cnErr = ''; screen = 'connect'; render(); window.scrollTo(0, 0); },
+  cnBack(){ screen = cfg.done ? 'login' : 'setup'; render(); },
+  async cnLink(){ const d = parseLink(ui.cn_link); if (!d){ ui.cnErr = 'That link does not look right.'; render(); return; } await doConnect(d.u, d.c); },
+  async cnGo(){ const code = ui.cn_code.trim(); await doConnect(ui.cn_url, code || newCode()); },
+  async syncNow(){ toast('Syncing…'); await syncPull(); toast(sync.status === 'ok' ? 'Up to date ✅' : syncText()); },
+  async syncLink(){
+    if (!await myPinOk(ui.pinSync)){ toast('Type your master PIN first.'); return; }
+    ui.syncLink = location.href.split('#')[0] + '#sync=' + encodeURIComponent(btoa(JSON.stringify({u:sync.url, c:sync.code})));
+    try { await navigator.clipboard.writeText(ui.syncLink); toast('Link copied ✅'); } catch(e){ toast('Select the link and copy it.'); }
+    ui.pinSync = ''; render();
+  },
+  async syncOff(){
+    if (!await myPinOk(ui.pinSync)){ toast('Type your master PIN first.'); return; }
+    syncDisconnect(); ui.pinSync = ''; ui.syncLink = ''; render(); toast('This device is no longer syncing. Its data stays here.');
+  },
+  async msgSave(){
+    if (!isAdmin()) return;
+    if (!await myPinOk(ui.pinMsg)){ toast('That PIN is not right.'); return; }
+    cfg.msgs = cfg.msgs || {};
+    Object.keys(MSG_DEFAULTS).forEach(k => {
+      const v = (ui['ms_' + k] !== undefined ? ui['ms_' + k] : ((cfg.msgs && cfg.msgs[k]) || MSG_DEFAULTS[k])).trim().slice(0, 120);
+      if (!v || v === MSG_DEFAULTS[k]) delete cfg.msgs[k]; else cfg.msgs[k] = v;
+    });
+    cfgStore.write(cfg); Object.keys(ui).filter(k => /^ms_/.test(k)).forEach(k => delete ui[k]); ui.pinMsg = ''; render(); toast('Welcome messages saved ✅');
+  },
+  async msgReset(){
+    if (!isAdmin()) return;
+    if (!await myPinOk(ui.pinMsg)){ toast('Type your PIN first.'); return; }
+    cfg.msgs = {}; cfgStore.write(cfg); Object.keys(ui).filter(k => /^ms_/.test(k)).forEach(k => delete ui[k]); ui.pinMsg = ''; render(); toast('Welcome messages are back to the originals.');
+  },
+  fxToggle(){ fx.toggle(); render(); },
+  fxHear(){ welcomeLadu(); confettiBurst(24); },
+  homeRedeem(){ ui.wlFresh = false; ui.wlStage = 'points'; ui.wlPts = ''; ui.wlPin = ''; ui.wlErr = ''; screen = 'welcome'; render(); window.scrollTo(0, 0); },
+  rowAward(el){ const a = ACTS[el.dataset.v]; ui.cat = a.group.id; ui.act = a.id; route = 'award'; render(); window.scrollTo(0, 0); },
+  edCol(el){ ui.edCol = el.dataset.v; render(); },
+  async edSave(){
+    const a = ui.edAct, col = ui.edCol, nv = Math.floor(Number(ui.edNew));
+    if (!(a && ACTS[a] && ui.edNew !== '' && nv >= 0)) return;
+    if (!await myPinOk(ui.pinEd)){ toast('That PIN is not right.'); return; }
+    const delta = nv - compute(events).tot[a][col];
+    if (!delta){ toast('That is already the total. Nothing changed.'); return; }
+    const ev = {id:uid(), type:'adjust', ts:Date.now(), act:a, who:col, delta, note:'Edited by ' + NAMES[session.user]};
+    if (compute(events.concat([ev])).balPts < 0){ toast('That would take the points below zero.'); return; }
+    try { await storeAdd(ev); ui.edNew = ''; ui.pinEd = ''; render(); toast(`${ACTS[a].name}: ${WHO[col]}'s points are now ${num(nv)} ✏️`); } catch(err){ writeFailed(err); }
+  },
+  async rateSave(){
+    const v = Math.round(Number(ui.rateIn) * 100) / 100; if (!(v > 0 && v <= 10000)) return;
+    if (!await myPinOk(ui.pinRate)){ toast('That PIN is not right.'); return; }
+    try { await saveRate(v); ui.rateIn = ''; ui.pinRate = ''; render(); toast(`Point value is now ${fmtRate()} 🪙`); } catch(err){ writeFailed(err); }
+  },
+  async kidReset(){
+    if (!await myPinOk(ui.pinKid)){ toast('That PIN is not right.'); return; }
+    try {
+      { const o = pinStore.read(); delete o.ridhaan; pinStore.write(o); }
+      pins.ridhaan = null; ui.pinKid = ''; render(); toast(NAMES.ridhaan + ' will make a new PIN next time he logs in.');
+    } catch(err){ writeFailed(err); }
+  },
+  wlNo(){ enterApp(); },
+  wlFinish(){ enterApp(); },
+  wlChip(el){ ui.wlPts = String(el.dataset.v); const i = $('#wlIn'); if (i) i.value = ui.wlPts; refresh(); },
+  async wlRedeem(){
+    const c = compute(events), n = Math.floor(Number(ui.wlPts)) || 0; if (!(n > 0 && n <= c.balPts)) return;
+    const kid = session.user === 'ridhaan', needPin = kid || !ui.wlFresh;
+    if (kid){
+      if (!pins.mumma && !pins.bapu){ ui.wlErr = NAMES.mumma + ' or ' + NAMES.bapu + ' must set up a PIN first.'; refresh(); return; }
+      const hm = await hashPin('mumma', ui.wlPin), hb = await hashPin('bapu', ui.wlPin);
+      if (!((pins.mumma && hm === pins.mumma) || (pins.bapu && hb === pins.bapu))){ ui.wlErr = 'That parent PIN is not right.'; refresh(); return; }
+    } else if (needPin && !await myPinOk(ui.wlPin)){ ui.wlErr = 'That PIN is not right.'; refresh(); return; }
+    try {
+      await storeAdd({id:uid(), type:'redeem', ts:Date.now(), pts:n, note: kid ? 'Asked by ' + NAMES.ridhaan + ', approved' : 'By ' + NAMES[session.user]});
+      ui.wlDone = n; ui.wlStage = 'done'; ui.wlPts = ''; ui.wlPin = ''; ui.wlErr = ''; render(); confettiBurst(30); fx.clap();
+    } catch(err){ writeFailed(err); }
+  },
+  cat(el){ ui.cat = el.dataset.v; const g = GROUPS.find(x => x.id === ui.cat); ui.act = g.acts.length === 1 ? g.acts[0][0] : ''; render(); },
+  act(el){ ui.act = el.dataset.v; render(); },
+  amt(el){ ui.amt = Number(el.dataset.v); ui.custom = ''; render(); },
+  rdChip(el){ ui.rd = String(el.dataset.v); const i = $('#rdIn'); if (i) i.value = ui.rd; refresh(); },
+  async award(){
+    const n = amtVal(); if (!(isParent() && ui.act && n)) return;
+    if (!await myPinOk(ui.pinAw)){ toast('That PIN is not right.'); return; }
+    const ev = {id:uid(), type:'award', ts:Date.now(), who:myWho(), act:ui.act, pts:n, note:ui.note.trim()};
+    if (n < 0 && compute(events.concat([ev])).balPts < 0){ toast('That would take the points below zero. There are ' + num(compute(events).balPts) + ' points now.'); return; }
+    try { await storeAdd(ev); ui.act = ''; ui.note = ''; ui.pinAw = ''; ui.cat = ui.cat === 'others' ? '' : ui.cat; render(); } catch(err){ writeFailed(err); }
+  },
+  async redeem(){
+    const c = compute(events), n = Math.floor(Number(ui.rd)) || 0; if (!(isParent() && n > 0 && n <= c.balPts)) return;
+    if (!await myPinOk(ui.pinRd)){ toast('That PIN is not right.'); return; }
+    try { await storeAdd({id:uid(), type:'redeem', ts:Date.now(), pts:n, note:ui.rdNote.trim()}); ui.rd = ''; ui.rdNote = ''; ui.pinRd = ''; render(); toast(`Redeemed ${num(n)} points for ${money(n*RATE_C)} 🎟️`); } catch(err){ writeFailed(err); }
+  },
+  async spend(){
+    const c = compute(events), v = Math.round(Number(ui.sp) * 100) || 0; if (!(v > 0 && v <= c.piggyC)) return;
+    try { await storeAdd({id:uid(), type:'expense', ts:Date.now(), cents:v, note:ui.spNote.trim()}); ui.sp = ''; ui.spNote = ''; render(); toast(`Recorded ${money(v)} spent from the piggy 🛍️`); } catch(err){ writeFailed(err); }
+  },
+  async deposit(){
+    const v = Math.round(Number(ui.dp) * 100) || 0; if (!(v > 0)) return;
+    try { await storeAdd({id:uid(), type:'deposit', ts:Date.now(), cents:v, note:ui.dpNote.trim()}); ui.dp = ''; ui.dpNote = ''; render(); toast(`Added ${money(v)} to the piggy 🐷`); } catch(err){ writeFailed(err); }
+  },
+  async undo(el){
+    const id = el.dataset.id, rest = events.filter(e => e.id !== id), c = compute(rest);
+    if (c.balPts < 0 || c.piggyC < 0) { toast('Cannot undo that one: points or piggy money would go below zero.'); return; }
+    try { await storeRemove(id); toast('Undone.'); } catch(err){ writeFailed(err); }
+  }
+};
+document.addEventListener('click', e => { const el = e.target.closest('[data-a]'); if (el && actions[el.dataset.a]) actions[el.dataset.a](el); });
+document.addEventListener('input', e => {
+  const ad = e.target.dataset && e.target.dataset.adj;
+  if (ad){ const [u, k] = ad.split('.'); if (ui.adj[u]){ ui.adj[u][k] = Number(e.target.value); adjustPic(u); } return; } const k = e.target.dataset && e.target.dataset.bind; if (k){ ui[k] = e.target.value; refresh(); } });
+document.addEventListener('change', async e => {
+  const t = e.target; if (!t || !t.dataset) return;
+  if (t.dataset.file && t.files && t.files[0]){
+    try { const u = t.dataset.file, im = await loadImg(t.files[0]); origImgs[u] = im; ui.adj[u] = {z:1, x:50, y:30}; ui.pend[u] = cropPics(im, ui.adj[u], ui.sketch); render(); } catch(err){ toast('That picture could not be read. Try a JPG or PNG.'); }
+  } else if (t.dataset.restore && t.files && t.files[0]){
+    try {
+      const d = JSON.parse(await t.files[0].text());
+      if (!d || d.app !== 'ridhaan-star-log') throw new Error('not ours');
+      ui.restoreData = d; ui.restoreName = t.files[0].name; render();
+    } catch(err){ ui.restoreData = null; toast('That is not a backup file from this app.'); render(); }
+  }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'pinIn') actions.authNext(); });
+
+/* ---------- start ---------- */
+rebuildActs();
+applyProfiles();
+if (!cfg.done) screen = 'setup';
+if (SYNC_ENABLED){
+  const d = parseLink(location.hash);
+  if (d && !sync.on){ ui.cn_url = d.u; ui.cn_code = d.c; ui.cnErr = 'Link found. Press Connect to join this family.'; screen = 'connect'; }
+}
+setEvents(local.read());
+if (SYNC_ENABLED && sync.on){ startPolling(); setTimeout(syncPull, 300); }
+</script>
+</body>
+</html>
